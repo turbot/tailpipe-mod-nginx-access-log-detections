@@ -1,10 +1,6 @@
-# Nginx Access Log Detections Mod for Powerpipe
+# Nginx Access Log Detections Mod
 
-View dashboards, run detections and scan for anomalies across your Nginx access logs.
-
-<!-- 
-TODO: Insert images
--->
+View dashboards, run reports, and scan for anomalies across your Nginx Access logs.
 
 ## Documentation
 
@@ -109,6 +105,7 @@ Run a benchmark:
 powerpipe benchmark run nginx_access_log_detections.benchmark.
 ```
 -->
+
 Different output formats are also available, for more information please see
 [Output Formats](https://powerpipe.io/docs/reference/cli/benchmark#output-formats).
 
@@ -116,14 +113,13 @@ Different output formats are also available, for more information please see
 
 This repository is published under the [Apache 2.0 license](https://www.apache.org/licenses/LICENSE-2.0). Please see our [code of conduct](https://github.com/turbot/.github/blob/main/CODE_OF_CONDUCT.md). We look forward to collaborating with you!
 
-[Tailpipe](https://tailpipe.io) and [Powerpipe](https://powerpipe.io) are products produced from this open source software, exclusively by [Turbot HQ, Inc](https://turbot.com). They are distributed under our commercial terms. Others are allowed to make their own distribution of the software, but cannot use any of the Turbot trademarks, cloud services, etc. You can learn more in our [Open Source FAQ](https://turbot.com/open-source).
+[Steampipe](https://steampipe.io) and [Powerpipe](https://powerpipe.io) are products produced from this open source software, exclusively by [Turbot HQ, Inc](https://turbot.com). They are distributed under our commercial terms. Others are allowed to make their own distribution of the software, but cannot use any of the Turbot trademarks, cloud services, etc. You can learn more in our [Open Source FAQ](https://turbot.com/open-source).
 
 ## Get Involved
 
-**[Join #tailpipe and #powerpipe on Slack →](https://turbot.com/community/join)**
+**[Join #powerpipe on Slack →](https://turbot.com/community/join)**
 
 Want to help but don't know where to start? Pick up one of the `help wanted` issues:
 
 - [Powerpipe](https://github.com/turbot/powerpipe/labels/help%20wanted)
-- [Tailpipe](https://github.com/turbot/tailpipe/labels/help%20wanted)
 - [Nginx Access Log Detections Mod](https://github.com/turbot/tailpipe-mod-nginx0-access-log-detections/labels/help%20wanted)
