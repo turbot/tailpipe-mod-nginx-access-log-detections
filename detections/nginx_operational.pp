@@ -48,7 +48,7 @@ query "nginx_high_error_rate" {
         time_bucket('5 minutes', tp_timestamp)
       having
         count(*) >= 100  -- Minimum request threshold
-        and (count(*) filter (where status >= 500))::float / count(*) >= 0.05  -- 5% error rate threshold
+        and (count(*) filter (where status >= 500))::float / count(*) >= 0.02  -- 2% error rate threshold
     )
     select
       *

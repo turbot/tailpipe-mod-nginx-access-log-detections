@@ -90,16 +90,16 @@ query "nginx_restricted_resource_access" {
     from
       nginx_access_log
     where
-      lower(request_uri) like any (array[
-        '%/admin%',
-        '%/manager%',
-        '%/console%',
-        '%/dashboard%',
-        '%/management%',
-        '%/phpMyAdmin%',
-        '%/wp-admin%',
-        '%/administrator%'
-      ])
+      (
+        lower(request_uri) like '%/admin%'
+        or lower(request_uri) like '%/manager%'
+        or lower(request_uri) like '%/console%'
+        or lower(request_uri) like '%/dashboard%'
+        or lower(request_uri) like '%/management%'
+        or lower(request_uri) like '%/phpmyadmin%'
+        or lower(request_uri) like '%/wp-admin%'
+        or lower(request_uri) like '%/administrator%'
+      )
       and status != 404  -- Exclude 404s to reduce noise
     order by
       timestamp desc;
@@ -130,13 +130,9 @@ query "nginx_unauthorized_ip_access" {
       from
         nginx_access_log
       where
-        -- Add your unauthorized IP ranges here
-        -- Example: Internal resources should only be accessed from internal IPs
-        (request_uri like '/internal/%' and not (
-          remote_addr like '10.%' or
-          remote_addr like '172.16.%' or
-          remote_addr like '192.168.%'
-        ))
+        remote_addr not like '10.%'
+        and remote_addr not like '172.%'
+        and remote_addr not like '192.168.%'
       group by
         remote_addr
     )
@@ -149,58 +145,58 @@ query "nginx_unauthorized_ip_access" {
   EOQ
 }
 
-detection "nginx_regulatory_violations" {
-  title           = "Regulatory Compliance Violations"
-  description     = "Detect potential violations of regulatory compliance requirements."
-  severity        = "high"
-  display_columns = ["violation_type", "request_count", "unique_ips", "first_occurrence", "last_occurrence"]
+# detection "nginx_regulatory_violations" {
+#   title           = "Regulatory Compliance Violations"
+#   description     = "Detect potential violations of regulatory compliance requirements."
+#   severity        = "high"
+#   display_columns = ["violation_type", "request_count", "unique_ips", "first_occurrence", "last_occurrence"]
   
-  query = query.nginx_regulatory_violations
+#   query = query.nginx_regulatory_violations
 
-  tags = merge(local.nginx_compliance_common_tags, {
-    type = "Regulatory"
-  })
-}
+#   tags = merge(local.nginx_compliance_common_tags, {
+#     type = "Regulatory"
+#   })
+# }
 
-query "nginx_regulatory_violations" {
-  sql = <<-EOQ
-    with violations as (
-      select
-        case
-          when request_uri ~ '/api/v[0-9]+/payment' then 'PCI-DSS Payment API Access'
-          when request_uri ~ '/health' then 'HIPAA Health Data Access'
-          when request_uri ~ '/pii/' then 'GDPR PII Access'
-          when status = 405 then 'Method Not Allowed'
-          when status = 403 then 'Forbidden Access'
-        end as violation_type,
-        count(*) as request_count,
-        count(distinct remote_addr) as unique_ips,
-        min(tp_timestamp) as first_occurrence,
-        max(tp_timestamp) as last_occurrence
-      from
-        nginx_access_log
-      where
-        request_uri ~ '/api/v[0-9]+/payment'
-        or request_uri ~ '/health'
-        or request_uri ~ '/pii/'
-        or status in (403, 405)
-      group by
-        case
-          when request_uri ~ '/api/v[0-9]+/payment' then 'PCI-DSS Payment API Access'
-          when request_uri ~ '/health' then 'HIPAA Health Data Access'
-          when request_uri ~ '/pii/' then 'GDPR PII Access'
-          when status = 405 then 'Method Not Allowed'
-          when status = 403 then 'Forbidden Access'
-        end
-    )
-    select
-      *
-    from
-      violations
-    order by
-      request_count desc;
-  EOQ
-}
+# query "nginx_regulatory_violations" {
+#   sql = <<-EOQ
+#     with violations as (
+#       select
+#         case
+#           when request_uri ~ '/api/v[0-9]+/payment' then 'PCI-DSS Payment API Access'
+#           when request_uri ~ '/health' then 'HIPAA Health Data Access'
+#           when request_uri ~ '/pii/' then 'GDPR PII Access'
+#           when status = 405 then 'Method Not Allowed'
+#           when status = 403 then 'Forbidden Access'
+#         end as violation_type,
+#         count(*) as request_count,
+#         count(distinct remote_addr) as unique_ips,
+#         min(tp_timestamp) as first_occurrence,
+#         max(tp_timestamp) as last_occurrence
+#       from
+#         nginx_access_log
+#       where
+#         request_uri ~ '/api/v[0-9]+/payment'
+#         or request_uri ~ '/health'
+#         or request_uri ~ '/pii/'
+#         or status in (403, 405)
+#       group by
+#         case
+#           when request_uri ~ '/api/v[0-9]+/payment' then 'PCI-DSS Payment API Access'
+#           when request_uri ~ '/health' then 'HIPAA Health Data Access'
+#           when request_uri ~ '/pii/' then 'GDPR PII Access'
+#           when status = 405 then 'Method Not Allowed'
+#           when status = 403 then 'Forbidden Access'
+#         end
+#     )
+#     select
+#       *
+#     from
+#       violations
+#     order by
+#       request_count desc;
+#   EOQ
+# }
 
 detection "nginx_data_privacy_requirements" {
   title           = "Data Privacy Requirements"
