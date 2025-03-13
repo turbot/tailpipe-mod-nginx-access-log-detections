@@ -12,7 +12,7 @@ benchmark "nginx_compliance_detections" {
     detection.nginx_pii_data_exposure,
     detection.nginx_restricted_resource_access,
     detection.nginx_unauthorized_ip_access,
-    detection.nginx_regulatory_violations,
+    # detection.nginx_regulatory_violations,
     detection.nginx_data_privacy_requirements
   ]
 

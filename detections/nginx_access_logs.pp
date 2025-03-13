@@ -13,9 +13,3 @@ benchmark "nginx_access_log_detections" {
     type = "Benchmark"
   })
 }
-
-locals {
-  nginx_access_log_detections_common_tags = {
-    service = "Nginx"
-  }
-} 

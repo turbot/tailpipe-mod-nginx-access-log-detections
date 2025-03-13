@@ -13,7 +13,7 @@ benchmark "nginx_performance_detections" {
     detection.nginx_response_time_anomalies,
     detection.nginx_upstream_latency,
     detection.nginx_request_queue_size,
-    detection.nginx_cache_performance
+    # detection.nginx_cache_performance
   ]
 
   tags = merge(local.nginx_performance_common_tags, {

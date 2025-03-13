@@ -284,19 +284,18 @@ query "nginx_command_injection_attempts" {
       or lower(request_uri) like '%|%'
       or lower(request_uri) like '%`%'
       or lower(request_uri) like '%$(%'
-      or lower(request_uri) like '%${%'
+      or lower(request_uri) like '%$${%'
       or lower(request_uri) like '%&&%'
       or lower(request_uri) like '%||%'
       or lower(request_uri) like '%>%'
       or lower(request_uri) like '%<%'
-      -- URL encoded variants
-      or lower(request_uri) like '%%%3b%'  -- ;
-      or lower(request_uri) like '%%%7c%'  -- |
-      or lower(request_uri) like '%%%60%'  -- `
-      or lower(request_uri) like '%%%24%'  -- $
-      or lower(request_uri) like '%%%3e%'  -- >
-      or lower(request_uri) like '%%%3c%'  -- <
-      or lower(request_uri) like '%%%2f%'  -- /
+      or lower(request_uri) like '%%%3b%' 
+      or lower(request_uri) like '%%%7c%' 
+      or lower(request_uri) like '%%%60%' 
+      or lower(request_uri) like '%%%24%' 
+      or lower(request_uri) like '%%%3e%' 
+      or lower(request_uri) like '%%%3c%' 
+      or lower(request_uri) like '%%%2f%' 
     order by
       tp_timestamp desc;
   EOQ
@@ -337,9 +336,8 @@ query "nginx_sensitive_file_access" {
       or lower(request_uri) like '%.htpasswd%'
       or lower(request_uri) like '%/proc/%'
       or lower(request_uri) like '%/sys/%'
-      -- URL-encoded variants
-      or lower(request_uri) like '%%%2e%'  -- .
-      or lower(request_uri) like '%%%2f%'  -- /
+      or lower(request_uri) like '%%%2e%' 
+      or lower(request_uri) like '%%%2f%' 
     order by
       tp_timestamp desc;
   EOQ
