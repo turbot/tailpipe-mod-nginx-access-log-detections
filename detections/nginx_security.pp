@@ -50,16 +50,14 @@ query "nginx_sql_injection_attempts" {
     from
       nginx_access_log
     where
-      lower(request_uri) like any (array[
-        '%select%from%',
-        '%union%select%',
-        '%insert%into%',
-        '%delete%from%',
-        '%update%set%',
-        '%drop%table%',
-        '%or%1=1%',
-        '%\'%or%\'1\'=\'1%'
-      ])
+      lower(request_uri) like '%select%from%'
+      or lower(request_uri) like '%union%select%'
+      or lower(request_uri) like '%insert%into%'
+      or lower(request_uri) like '%delete%from%'
+      or lower(request_uri) like '%update%set%'
+      or lower(request_uri) like '%drop%table%'
+      or lower(request_uri) like '%or%1=1%'
+      or lower(request_uri) like '%or%1%=%1%'
     order by
       tp_timestamp desc;
   EOQ
@@ -89,8 +87,26 @@ query "nginx_directory_traversal_attempts" {
     from
       nginx_access_log
     where
+       -- Plain directory traversal attempts
       request_uri like '%../%'
-      or request_uri like '%..\\%'
+      or request_uri like '%/../%'
+      or request_uri like '%/./%'
+      or request_uri like '%...%'
+      or request_uri like '%\\..\\%'
+      -- URL-encoded variants (both cases)
+      or request_uri like '%..%2f%'
+      or request_uri like '%..%2F%'
+      or request_uri like '%%%2e%%2e%%2f%'
+      or request_uri like '%%%2E%%2E%%2F%'
+      or request_uri like '%%%2e%%2e/%'
+      or request_uri like '%%%2E%%2E/%'
+      -- Double-encoded variants
+      or request_uri like '%25%32%65%25%32%65%25%32%66%'
+      -- Backslash variants
+      or request_uri like '%5c..%5c%'
+      or request_uri like '%5C..%5C%'
+      or request_uri like '%%%5c..%%5c%'
+      or request_uri like '%%%5C..%%5C%'
     order by
       tp_timestamp desc;
   EOQ
@@ -160,18 +176,22 @@ query "nginx_suspicious_user_agents" {
     from
       nginx_access_log
     where
-      lower(http_user_agent) like any (array[
-        '%sqlmap%',
-        '%nikto%',
-        '%nmap%',
-        '%masscan%',
-        '%zgrab%',
-        '%gobuster%',
-        '%dirbuster%',
-        '%hydra%',
-        '%burpsuite%',
-        '%nessus%'
-      ])
+      lower(http_user_agent) like '%sqlmap%'
+      or lower(http_user_agent) like '%nikto%'
+      or lower(http_user_agent) like '%nmap%'
+      or lower(http_user_agent) like '%masscan%'
+      or lower(http_user_agent) like '%zgrab%'
+      or lower(http_user_agent) like '%gobuster%'
+      or lower(http_user_agent) like '%dirbuster%'
+      or lower(http_user_agent) like '%hydra%'
+      or lower(http_user_agent) like '%burpsuite%'
+      or lower(http_user_agent) like '%nessus%'
+      or lower(http_user_agent) like '%metasploit%'
+      or lower(http_user_agent) like '%sqlninja%'
+      or lower(http_user_agent) like '%python%'
+      or lower(http_user_agent) like '%curl%'
+      or lower(http_user_agent) like '%wget%'
+      or http_user_agent is null
     order by
       tp_timestamp desc;
   EOQ
@@ -201,17 +221,36 @@ query "nginx_xss_attempts" {
     from
       nginx_access_log
     where
-      lower(request_uri) like any (array[
-        '%<script%',
-        '%javascript:%',
-        '%onerror=%',
-        '%onload=%',
-        '%onclick=%',
-        '%alert(%',
-        '%eval(%',
-        '%document.cookie%',
-        '%<img%src=%'
-      ])
+      -- Plain XSS patterns
+      lower(request_uri) like '%<script%'
+      or lower(request_uri) like '%javascript:%'
+      or lower(request_uri) like '%onerror=%'
+      or lower(request_uri) like '%onload=%'
+      or lower(request_uri) like '%onclick=%'
+      or lower(request_uri) like '%alert(%'
+      or lower(request_uri) like '%eval(%'
+      or lower(request_uri) like '%document.cookie%'
+      or lower(request_uri) like '%<img%src=%'
+      -- URL-encoded variants (%%% to match literal % anywhere)
+      or lower(request_uri) like '%%%3cscript%'
+      or lower(request_uri) like '%%%3a%'  -- :
+      or lower(request_uri) like '%%%3d%'  -- =
+      or lower(request_uri) like '%%%28%'  -- (
+      or lower(request_uri) like '%%%2e%'  -- .
+      -- Double-encoded variants
+      or lower(request_uri) like '%%%253c%'  -- <
+      or lower(request_uri) like '%%%253a%'  -- :
+      or lower(request_uri) like '%%%253d%'  -- =
+      or lower(request_uri) like '%%%2528%'  -- (
+      -- Additional XSS vectors
+      or lower(request_uri) like '%onmouseover=%'
+      or lower(request_uri) like '%%%3d%'  -- =
+      or lower(request_uri) like '%onfocus=%'
+      or lower(request_uri) like '%%%3d%'  -- =
+      or lower(request_uri) like '%expression(%'
+      or lower(request_uri) like '%%%28%'  -- (
+      or lower(request_uri) like '%<svg%'
+      or lower(request_uri) like '%%%3csvg%'
     order by
       tp_timestamp desc;
   EOQ
@@ -241,18 +280,23 @@ query "nginx_command_injection_attempts" {
     from
       nginx_access_log
     where
-      lower(request_uri) like any (array[
-        '%;%',
-        '%|%',
-        '%`%',
-        '%$(%',
-        '%${%',
-        '%&&%',
-        '%||%',
-        '%>%',
-        '%<%',
-        '%2f2f%'  -- URL encoded //
-      ])
+      lower(request_uri) like '%;%'
+      or lower(request_uri) like '%|%'
+      or lower(request_uri) like '%`%'
+      or lower(request_uri) like '%$(%'
+      or lower(request_uri) like '%${%'
+      or lower(request_uri) like '%&&%'
+      or lower(request_uri) like '%||%'
+      or lower(request_uri) like '%>%'
+      or lower(request_uri) like '%<%'
+      -- URL encoded variants
+      or lower(request_uri) like '%%%3b%'  -- ;
+      or lower(request_uri) like '%%%7c%'  -- |
+      or lower(request_uri) like '%%%60%'  -- `
+      or lower(request_uri) like '%%%24%'  -- $
+      or lower(request_uri) like '%%%3e%'  -- >
+      or lower(request_uri) like '%%%3c%'  -- <
+      or lower(request_uri) like '%%%2f%'  -- /
     order by
       tp_timestamp desc;
   EOQ
@@ -282,18 +326,20 @@ query "nginx_sensitive_file_access" {
     from
       nginx_access_log
     where
-      lower(request_uri) like any (array[
-        '%.env%',
-        '%.git%',
-        '%wp-config.php%',
-        '%config.php%',
-        '%/etc/%',
-        '%/var/log/%',
-        '%.htaccess%',
-        '%.htpasswd%',
-        '%/proc/%',
-        '%/sys/%'
-      ])
+      -- Plain paths
+      lower(request_uri) like '%.env%'
+      or lower(request_uri) like '%.git%'
+      or lower(request_uri) like '%wp-config.php%'
+      or lower(request_uri) like '%config.php%'
+      or lower(request_uri) like '%/etc/%'
+      or lower(request_uri) like '%/var/log/%'
+      or lower(request_uri) like '%.htaccess%'
+      or lower(request_uri) like '%.htpasswd%'
+      or lower(request_uri) like '%/proc/%'
+      or lower(request_uri) like '%/sys/%'
+      -- URL-encoded variants
+      or lower(request_uri) like '%%%2e%'  -- .
+      or lower(request_uri) like '%%%2f%'  -- /
     order by
       tp_timestamp desc;
   EOQ
@@ -319,13 +365,13 @@ query "nginx_protocol_violations" {
       request_uri as request_path,
       request_method,
       status as status_code,
-      http_version,
+      server_protocol as http_version,
       tp_timestamp as timestamp
     from
       nginx_access_log
     where
       request_method not in ('GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'OPTIONS', 'TRACE', 'CONNECT')
-      or http_version not in ('HTTP/1.0', 'HTTP/1.1', 'HTTP/2.0')
+      or server_protocol not in ('HTTP/1.0', 'HTTP/1.1', 'HTTP/2.0')
       or length(request_uri) > 2048  -- Extremely long URLs
     order by
       tp_timestamp desc;
