@@ -13,7 +13,9 @@ benchmark "nginx_performance_detections" {
     detection.nginx_response_time_anomalies,
     detection.nginx_upstream_latency,
     detection.nginx_request_queue_size,
-    # detection.nginx_cache_performance
+    detection.nginx_memory_leak_detection,
+    detection.nginx_connection_pool_exhaustion,
+    detection.nginx_ddos_early_warning
   ]
 
   tags = merge(local.nginx_performance_common_tags, {
@@ -177,6 +179,135 @@ query "nginx_request_queue_size" {
       queue_windows
     where
       queue_size >= 100  -- Queue size threshold
+    order by
+      window_start desc;
+  EOQ
+}
+
+detection "nginx_memory_leak_detection" {
+  title           = "Potential Memory Leak Detection"
+  description     = "Detect patterns indicating potential memory leaks through response size analysis"
+  severity        = "critical"
+  display_columns = ["endpoint", "avg_response_size", "growth_rate", "window_start"]
+  
+  query = query.nginx_memory_leak_detection
+
+  tags = merge(local.nginx_performance_common_tags, {
+    type = "Resource"
+  })
+}
+
+query "nginx_memory_leak_detection" {
+  sql = <<-EOQ
+    with response_trends as (
+      select
+        request_uri as endpoint,
+        time_bucket('1 hour', tp_timestamp) as window_start,
+        avg(bytes_sent) as avg_response_size,
+        (avg(bytes_sent) - lag(avg(bytes_sent)) over (
+          partition by request_uri
+          order by time_bucket('1 hour', tp_timestamp)
+        )) / nullif(lag(avg(bytes_sent)) over (
+          partition by request_uri
+          order by time_bucket('1 hour', tp_timestamp)
+        ), 0) * 100 as growth_rate
+      from
+        nginx_access_log
+      group by
+        request_uri,
+        time_bucket('1 hour', tp_timestamp)
+    )
+    select
+      endpoint,
+      round(avg_response_size::numeric, 2) as avg_response_size,
+      round(growth_rate::numeric, 2) as growth_rate,
+      window_start
+    from
+      response_trends
+    where
+      growth_rate > 50
+      and avg_response_size > 1048576
+    order by
+      growth_rate desc;
+  EOQ
+}
+
+detection "nginx_connection_pool_exhaustion" {
+  title           = "Connection Pool Exhaustion Risk"
+  description     = "Detect risk of connection pool exhaustion based on concurrent connections"
+  severity        = "critical"
+  display_columns = ["timestamp", "concurrent_connections", "rejection_rate"]
+  
+  query = query.nginx_connection_pool_exhaustion
+
+  tags = merge(local.nginx_performance_common_tags, {
+    type = "Capacity"
+  })
+}
+
+query "nginx_connection_pool_exhaustion" {
+  sql = <<-EOQ
+    with connection_stats as (
+      select
+        time_bucket('1 minute', tp_timestamp) as timestamp,
+        count(*) as concurrent_connections,
+        count(*) filter (where status = 503) / nullif(count(*), 0)::float * 100 as rejection_rate
+      from
+        nginx_access_log
+      group by
+        time_bucket('1 minute', tp_timestamp)
+    )
+    select
+      timestamp,
+      concurrent_connections,
+      round(rejection_rate::numeric, 2) as rejection_rate
+    from
+      connection_stats
+    where
+      concurrent_connections > 1000
+      or rejection_rate > 5
+    order by
+      timestamp desc;
+  EOQ
+}
+
+detection "nginx_ddos_early_warning" {
+  title           = "DDoS Attack Early Warning"
+  description     = "Detect early signs of DDoS attacks through traffic pattern analysis"
+  severity        = "critical"
+  display_columns = ["window_start", "request_rate", "unique_ips", "avg_response_time"]
+  
+  query = query.nginx_ddos_early_warning
+
+  tags = merge(local.nginx_performance_common_tags, {
+    type = "Security"
+  })
+}
+
+query "nginx_ddos_early_warning" {
+  sql = <<-EOQ
+    with traffic_patterns as (
+      select
+        time_bucket('30 seconds', tp_timestamp) as window_start,
+        count(*) / 30.0 as request_rate,
+        count(distinct remote_addr) as unique_ips,
+        avg(request_time) as avg_response_time,
+        stddev(request_time) as response_time_stddev
+      from
+        nginx_access_log
+      group by
+        time_bucket('30 seconds', tp_timestamp)
+    )
+    select
+      window_start,
+      round(request_rate::numeric, 2) as request_rate,
+      unique_ips,
+      round(avg_response_time::numeric, 3) as avg_response_time
+    from
+      traffic_patterns
+    where
+      request_rate > 1000
+      or (unique_ips > 500 and avg_response_time > 2)
     order by
       window_start desc;
   EOQ

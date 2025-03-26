@@ -18,7 +18,9 @@ benchmark "nginx_security_detections" {
     detection.nginx_sensitive_file_access,
     detection.nginx_protocol_violations,
     detection.nginx_rate_limit_violations,
-    detection.nginx_bot_detection
+    detection.nginx_bot_detection,
+    detection.nginx_api_key_exposure,
+    detection.nginx_zero_day_attack_patterns
   ]
 
   tags = merge(local.nginx_security_common_tags, {
@@ -31,7 +33,7 @@ detection "nginx_sql_injection_attempts" {
   description     = "Detect potential SQL injection attempts in URL parameters and request paths."
   severity        = "critical"
   display_columns = ["request_ip", "request_path", "request_method", "status_code", "timestamp"]
-  
+
   query = query.nginx_sql_injection_attempts
 
   tags = merge(local.nginx_security_common_tags, {
@@ -68,7 +70,7 @@ detection "nginx_directory_traversal_attempts" {
   description     = "Detect attempts to traverse directories using ../ patterns in URLs."
   severity        = "high"
   display_columns = ["request_ip", "request_path", "request_method", "status_code", "timestamp"]
-  
+
   query = query.nginx_directory_traversal_attempts
 
   tags = merge(local.nginx_security_common_tags, {
@@ -117,7 +119,7 @@ detection "nginx_brute_force_auth_attempts" {
   description     = "Detect potential brute force authentication attempts based on high frequency of 401/403 errors from the same IP."
   severity        = "high"
   display_columns = ["request_ip", "failed_attempts", "first_attempt", "last_attempt"]
-  
+
   query = query.nginx_brute_force_auth_attempts
 
   tags = merge(local.nginx_security_common_tags, {
@@ -157,7 +159,7 @@ detection "nginx_suspicious_user_agents" {
   description     = "Detect requests from known malicious or suspicious user agents."
   severity        = "medium"
   display_columns = ["request_ip", "user_agent", "request_path", "status_code", "timestamp"]
-  
+
   query = query.nginx_suspicious_user_agents
 
   tags = merge(local.nginx_security_common_tags, {
@@ -202,7 +204,7 @@ detection "nginx_xss_attempts" {
   description     = "Detect potential XSS attacks in request parameters and paths."
   severity        = "critical"
   display_columns = ["request_ip", "request_path", "request_method", "status_code", "timestamp"]
-  
+
   query = query.nginx_xss_attempts
 
   tags = merge(local.nginx_security_common_tags, {
@@ -261,7 +263,7 @@ detection "nginx_command_injection_attempts" {
   description     = "Detect potential command injection attempts in request parameters."
   severity        = "critical"
   display_columns = ["request_ip", "request_path", "request_method", "status_code", "timestamp"]
-  
+
   query = query.nginx_command_injection_attempts
 
   tags = merge(local.nginx_security_common_tags, {
@@ -306,7 +308,7 @@ detection "nginx_sensitive_file_access" {
   description     = "Detect attempts to access sensitive configuration or system files."
   severity        = "high"
   display_columns = ["request_ip", "request_path", "request_method", "status_code", "timestamp"]
-  
+
   query = query.nginx_sensitive_file_access
 
   tags = merge(local.nginx_security_common_tags, {
@@ -348,7 +350,7 @@ detection "nginx_protocol_violations" {
   description     = "Detect malformed requests and protocol violations that may indicate malicious activity."
   severity        = "medium"
   display_columns = ["request_ip", "request_path", "request_method", "status_code", "http_version", "timestamp"]
-  
+
   query = query.nginx_protocol_violations
 
   tags = merge(local.nginx_security_common_tags, {
@@ -381,7 +383,7 @@ detection "nginx_rate_limit_violations" {
   description     = "Detect IPs exceeding request rate limits, which may indicate DoS attempts or aggressive scanning."
   severity        = "high"
   display_columns = ["request_ip", "request_count", "unique_paths", "window_start", "window_end"]
-  
+
   query = query.nginx_rate_limit_violations
 
   tags = merge(local.nginx_security_common_tags, {
@@ -420,7 +422,7 @@ detection "nginx_bot_detection" {
   description     = "Detect patterns of automated bot activity based on request patterns and user agents."
   severity        = "medium"
   display_columns = ["request_ip", "user_agent", "request_count", "unique_paths", "avg_requests_per_second"]
-  
+
   query = query.nginx_bot_detection
 
   tags = merge(local.nginx_security_common_tags, {
@@ -463,4 +465,91 @@ query "nginx_bot_detection" {
     order by
       request_count desc;
   EOQ
-} 
+}
+
+  detection "nginx_api_key_exposure" {
+    title           = "API Key or Token Exposure"
+    description     = "Detect potential exposure of API keys or tokens in URLs"
+    severity        = "critical"
+    display_columns = ["request_ip", "request_path", "token_type", "timestamp"]
+
+    query = query.nginx_api_key_exposure
+
+    tags = merge(local.nginx_security_common_tags, {
+      mitre_attack_ids = "TA0006:T1552"
+    })
+  }
+
+  query "nginx_api_key_exposure" {
+    sql = <<-EOQ
+    select
+      remote_addr as request_ip,
+      request_uri as request_path,
+      case
+        when request_uri ~ '(?i)[a-z0-9]{32,}' then 'Potential API Key'
+        when request_uri ~ '(?i)bearer\s+[a-zA-Z0-9-._~+/]+=*' then 'Bearer Token'
+        when request_uri ~ '(?i)key=[a-zA-Z0-9-]{20,}' then 'API Key Parameter'
+      end as token_type,
+      tp_timestamp as timestamp
+    from
+      nginx_access_log
+    where
+      request_uri ~ '(?i)[a-z0-9]{32,}'
+      or request_uri ~ '(?i)bearer\s+[a-zA-Z0-9-._~+/]+=*'
+      or request_uri ~ '(?i)key=[a-zA-Z0-9-]{20,}'
+    order by
+      timestamp desc;
+  EOQ
+  }
+
+  detection "nginx_zero_day_attack_patterns" {
+    title           = "Potential Zero-Day Attack Patterns"
+    description     = "Detect unusual patterns that might indicate zero-day exploitation attempts"
+    severity        = "critical"
+    display_columns = ["pattern_type", "request_count", "unique_ips", "first_seen"]
+
+    query = query.nginx_zero_day_attack_patterns
+
+    tags = merge(local.nginx_security_common_tags, {
+      mitre_attack_ids = "TA0007:T1190"
+    })
+  }
+
+  query "nginx_zero_day_attack_patterns" {
+    sql = <<-EOQ
+    with unusual_patterns as (
+      select
+        case
+          when request_uri ~ '[\\x00-\\x01]|\\xff' then 'Binary Data Injection'
+          when request_uri ~ '\\.\\.|%2e%2e' then 'Path Manipulation'
+          when http_user_agent ~ '\\{.*\\}|\\$\\{.*\\}' then 'Template Injection'
+          when request_uri ~ '\\[.*\\]' then 'Array Manipulation'
+        end as pattern_type,
+        count(*) as request_count,
+        count(distinct remote_addr) as unique_ips,
+        min(tp_timestamp) as first_seen
+      from
+        nginx_access_log
+      where
+        request_uri ~ '[\\x00-\\x01]|\\xff'
+        or request_uri ~ '\\.\\.|%2e%2e'
+        or http_user_agent ~ '\\{.*\\}|\\$\\{.*\\}'
+        or request_uri ~ '\\[.*\\]'
+      group by
+        case
+          when request_uri ~ '[\\x00-\\x01]|\\xff' then 'Binary Data Injection'
+          when request_uri ~ '\\.\\.|%2e%2e' then 'Path Manipulation'
+          when http_user_agent ~ '\\{.*\\}|\\$\\{.*\\}' then 'Template Injection'
+          when request_uri ~ '\\[.*\\]' then 'Array Manipulation'
+        end
+    )
+    select
+      *
+    from
+      unusual_patterns
+    where
+      request_count > 10
+    order by
+      request_count desc;
+  EOQ
+  }
