@@ -122,4 +122,4 @@ This repository is published under the [Apache 2.0 license](https://www.apache.o
 Want to help but don't know where to start? Pick up one of the `help wanted` issues:
 
 - [Powerpipe](https://github.com/turbot/powerpipe/labels/help%20wanted)
-- [Nginx Access Log Detections Mod](https://github.com/turbot/tailpipe-mod-nginx0-access-log-detections/labels/help%20wanted)
+- [Nginx Access Log Detections Mod](https://github.com/turbot/tailpipe-mod-nginx-access-log-detections/labels/help%20wanted)
