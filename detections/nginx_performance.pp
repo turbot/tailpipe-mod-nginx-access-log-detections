@@ -18,9 +18,7 @@ benchmark "nginx_performance_detections" {
     detection.nginx_ddos_early_warning
   ]
 
-  tags = merge(local.nginx_performance_common_tags, {
-    type = "Benchmark"
-  })
+  tags = local.nginx_performance_common_tags
 }
 
 detection "nginx_slow_response_time" {
@@ -28,11 +26,11 @@ detection "nginx_slow_response_time" {
   description     = "Detect endpoints with consistently high response times exceeding threshold."
   severity        = "high"
   display_columns = ["endpoint", "avg_response_time", "request_count", "p95_response_time"]
-  
+
   query = query.nginx_slow_response_time
 
   tags = merge(local.nginx_performance_common_tags, {
-    type = "Latency"
+    mitre_attack_ids = "TA0040:T1499.004" // Impact: Application or System Exploitation
   })
 }
 
@@ -71,11 +69,11 @@ detection "nginx_response_time_anomalies" {
   description     = "Detect sudden increases in response time compared to historical patterns."
   severity        = "high"
   display_columns = ["window_start", "window_end", "avg_response_time", "historical_avg", "deviation_percent"]
-  
+
   query = query.nginx_response_time_anomalies
 
   tags = merge(local.nginx_performance_common_tags, {
-    type = "Anomaly"
+    mitre_attack_ids = "TA0040:T1499.003" // Impact: Application Exhaustion Flood
   })
 }
 
@@ -116,11 +114,11 @@ detection "nginx_upstream_latency" {
   description     = "Detect high latency from upstream servers when Nginx is used as a reverse proxy."
   severity        = "medium"
   display_columns = ["upstream", "avg_upstream_time", "request_count", "max_upstream_time"]
-  
+
   query = query.nginx_upstream_latency
 
   tags = merge(local.nginx_performance_common_tags, {
-    type = "Latency"
+    mitre_attack_ids = "TA0040:T1499.004" // Impact: Application or System Exploitation
   })
 }
 
@@ -149,11 +147,11 @@ detection "nginx_request_queue_size" {
   description     = "Detect when the request queue size becomes too large, indicating potential capacity issues."
   severity        = "high"
   display_columns = ["window_start", "window_end", "queue_size", "request_count"]
-  
+
   query = query.nginx_request_queue_size
 
   tags = merge(local.nginx_performance_common_tags, {
-    type = "Capacity"
+    mitre_attack_ids = "TA0040:T1499.002" // Impact: Service Exhaustion Flood
   })
 }
 
@@ -189,11 +187,11 @@ detection "nginx_memory_leak_detection" {
   description     = "Detect patterns indicating potential memory leaks through response size analysis"
   severity        = "critical"
   display_columns = ["endpoint", "avg_response_size", "growth_rate", "window_start"]
-  
+
   query = query.nginx_memory_leak_detection
 
   tags = merge(local.nginx_performance_common_tags, {
-    type = "Resource"
+    mitre_attack_ids = "TA0040:T1499.004" // Impact: Application or System Exploitation
   })
 }
 
@@ -237,11 +235,11 @@ detection "nginx_connection_pool_exhaustion" {
   description     = "Detect risk of connection pool exhaustion based on concurrent connections"
   severity        = "critical"
   display_columns = ["timestamp", "concurrent_connections", "rejection_rate"]
-  
+
   query = query.nginx_connection_pool_exhaustion
 
   tags = merge(local.nginx_performance_common_tags, {
-    type = "Capacity"
+    mitre_attack_ids = "TA0040:T1499.002" // Impact: Service Exhaustion Flood
   })
 }
 
@@ -276,11 +274,11 @@ detection "nginx_ddos_early_warning" {
   description     = "Detect early signs of DDoS attacks through traffic pattern analysis"
   severity        = "critical"
   display_columns = ["window_start", "request_rate", "unique_ips", "avg_response_time"]
-  
+
   query = query.nginx_ddos_early_warning
 
   tags = merge(local.nginx_performance_common_tags, {
-    type = "Security"
+    mitre_attack_ids = "TA0040:T1498,TA0040:T1499.002" // Impact: Network Denial of Service, Service Exhaustion Flood
   })
 }
 

@@ -25,11 +25,11 @@ detection "nginx_high_error_rate" {
   description     = "Detect when the rate of 5xx errors exceeds a threshold within a time window."
   severity        = "high"
   display_columns = ["error_count", "total_requests", "error_rate", "window_start", "window_end"]
-  
+
   query = query.nginx_high_error_rate
 
   tags = merge(local.nginx_operational_common_tags, {
-    type = "Availability"
+    mitre_attack_ids = "TA0040:T1499.004" // Impact: Application or System Exploitation
   })
 }
 
@@ -64,11 +64,11 @@ detection "nginx_unusual_traffic_spike" {
   description     = "Detect unusual spikes in traffic volume compared to historical patterns."
   severity        = "medium"
   display_columns = ["request_count", "avg_historical_requests", "deviation_percent", "window_start", "window_end"]
-  
+
   query = query.nginx_unusual_traffic_spike
 
   tags = merge(local.nginx_operational_common_tags, {
-    type = "Anomaly"
+    mitre_attack_ids = "TA0040:T1498" // Impact: Network Denial of Service
   })
 }
 
@@ -109,11 +109,11 @@ detection "nginx_high_bandwidth_usage" {
   description     = "Detect endpoints or IPs consuming unusually high bandwidth."
   severity        = "medium"
   display_columns = ["request_ip", "endpoint", "total_bytes", "request_count", "avg_bytes_per_request"]
-  
+
   query = query.nginx_high_bandwidth_usage
 
   tags = merge(local.nginx_operational_common_tags, {
-    type = "Resource"
+    mitre_attack_ids = "TA0040:T1496.002" // Impact: Resource Hijacking: Bandwidth Hijacking
   })
 }
 
@@ -143,11 +143,11 @@ detection "nginx_error_rate_by_endpoint" {
   description     = "Detect endpoints with unusually high error rates."
   severity        = "high"
   display_columns = ["endpoint", "error_count", "total_requests", "error_rate"]
-  
+
   query = query.nginx_error_rate_by_endpoint
 
   tags = merge(local.nginx_operational_common_tags, {
-    type = "Availability"
+    mitre_attack_ids = "TA0040:T1499.004" // Impact: Application or System Exploitation
   })
 }
 

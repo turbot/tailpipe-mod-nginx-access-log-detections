@@ -26,11 +26,11 @@ detection "nginx_pii_data_exposure" {
   description     = "Detect potential exposure of Personally Identifiable Information (PII) in URLs."
   severity        = "critical"
   display_columns = ["request_ip", "request_path", "pii_type", "status_code", "timestamp"]
-  
+
   query = query.nginx_pii_data_exposure
 
   tags = merge(local.nginx_compliance_common_tags, {
-    type = "Privacy"
+    mitre_attack_ids = "TA0009:T1213" // Collection: Data from Information Repositories
   })
 }
 
@@ -71,11 +71,11 @@ detection "nginx_restricted_resource_access" {
   description     = "Detect access attempts to restricted resources or administrative areas."
   severity        = "high"
   display_columns = ["request_ip", "request_path", "request_method", "status_code", "timestamp"]
-  
+
   query = query.nginx_restricted_resource_access
 
   tags = merge(local.nginx_compliance_common_tags, {
-    type = "Access"
+    mitre_attack_ids = "TA0007:T1083,TA0001:T1190" // Discovery: File and Directory Discovery, Initial Access: Exploit Public-Facing Application
   })
 }
 
@@ -111,11 +111,11 @@ detection "nginx_unauthorized_ip_access" {
   description     = "Detect access attempts from unauthorized IP ranges or geographic locations."
   severity        = "high"
   display_columns = ["request_ip", "request_count", "first_access", "last_access"]
-  
+
   query = query.nginx_unauthorized_ip_access
 
   tags = merge(local.nginx_compliance_common_tags, {
-    type = "Access"
+    mitre_attack_ids = "TA0005:T1535" // Defense Evasion: Unused/Unsupported Cloud Regions
   })
 }
 
@@ -150,7 +150,7 @@ query "nginx_unauthorized_ip_access" {
 #   description     = "Detect potential violations of regulatory compliance requirements."
 #   severity        = "high"
 #   display_columns = ["violation_type", "request_count", "unique_ips", "first_occurrence", "last_occurrence"]
-  
+
 #   query = query.nginx_regulatory_violations
 
 #   tags = merge(local.nginx_compliance_common_tags, {
@@ -203,11 +203,11 @@ detection "nginx_data_privacy_requirements" {
   description     = "Monitor compliance with data privacy requirements and sensitive data handling."
   severity        = "high"
   display_columns = ["endpoint", "total_requests", "sensitive_data_count", "unique_ips"]
-  
+
   query = query.nginx_data_privacy_requirements
 
   tags = merge(local.nginx_compliance_common_tags, {
-    type = "Privacy"
+    mitre_attack_ids = "TA0009:T1213,TA0043:T1592" // Collection: Data from Information Repositories, Reconnaissance: Gather Victim Host Information
   })
 }
 

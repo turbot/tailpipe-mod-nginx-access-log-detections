@@ -20,7 +20,9 @@ benchmark "nginx_security_detections" {
     detection.nginx_rate_limit_violations,
     detection.nginx_bot_detection,
     detection.nginx_api_key_exposure,
-    detection.nginx_zero_day_attack_patterns
+    detection.nginx_zero_day_attack_patterns,
+    detection.nginx_unusual_region_access,
+    detection.nginx_session_cookie_theft
   ]
 
   tags = merge(local.nginx_security_common_tags, {
@@ -467,21 +469,21 @@ query "nginx_bot_detection" {
   EOQ
 }
 
-  detection "nginx_api_key_exposure" {
-    title           = "API Key or Token Exposure"
-    description     = "Detect potential exposure of API keys or tokens in URLs"
-    severity        = "critical"
-    display_columns = ["request_ip", "request_path", "token_type", "timestamp"]
+detection "nginx_api_key_exposure" {
+  title           = "API Key or Token Exposure"
+  description     = "Detect potential exposure of API keys or tokens in URLs"
+  severity        = "critical"
+  display_columns = ["request_ip", "request_path", "token_type", "timestamp"]
 
-    query = query.nginx_api_key_exposure
+  query = query.nginx_api_key_exposure
 
-    tags = merge(local.nginx_security_common_tags, {
-      mitre_attack_ids = "TA0006:T1552"
-    })
-  }
+  tags = merge(local.nginx_security_common_tags, {
+    mitre_attack_ids = "TA0006:T1552"
+  })
+}
 
-  query "nginx_api_key_exposure" {
-    sql = <<-EOQ
+query "nginx_api_key_exposure" {
+  sql = <<-EOQ
     select
       remote_addr as request_ip,
       request_uri as request_path,
@@ -500,23 +502,23 @@ query "nginx_bot_detection" {
     order by
       timestamp desc;
   EOQ
-  }
+}
 
-  detection "nginx_zero_day_attack_patterns" {
-    title           = "Potential Zero-Day Attack Patterns"
-    description     = "Detect unusual patterns that might indicate zero-day exploitation attempts"
-    severity        = "critical"
-    display_columns = ["pattern_type", "request_count", "unique_ips", "first_seen"]
+detection "nginx_zero_day_attack_patterns" {
+  title           = "Potential Zero-Day Attack Patterns"
+  description     = "Detect unusual patterns that might indicate zero-day exploitation attempts"
+  severity        = "critical"
+  display_columns = ["pattern_type", "request_count", "unique_ips", "first_seen"]
 
-    query = query.nginx_zero_day_attack_patterns
+  query = query.nginx_zero_day_attack_patterns
 
-    tags = merge(local.nginx_security_common_tags, {
-      mitre_attack_ids = "TA0007:T1190"
-    })
-  }
+  tags = merge(local.nginx_security_common_tags, {
+    mitre_attack_ids = "TA0007:T1190"
+  })
+}
 
-  query "nginx_zero_day_attack_patterns" {
-    sql = <<-EOQ
+query "nginx_zero_day_attack_patterns" {
+  sql = <<-EOQ
     with unusual_patterns as (
       select
         case
@@ -552,4 +554,89 @@ query "nginx_bot_detection" {
     order by
       request_count desc;
   EOQ
-  }
+}
+
+detection "nginx_unusual_region_access" {
+  title           = "Access from Unusual Cloud Regions"
+  description     = "Detect access attempts from unusual or unauthorized cloud regions based on IP geolocation."
+  severity        = "high"
+  display_columns = ["request_ip", "request_path", "geo_location", "request_count", "first_seen", "last_seen"]
+
+  query = query.nginx_unusual_region_access
+
+  tags = merge(local.nginx_security_common_tags, {
+    mitre_attack_ids = "TA0005:T1535"
+  })
+}
+
+query "nginx_unusual_region_access" {
+  sql = <<-EOQ
+    with ip_activity as (
+      select
+        remote_addr as request_ip,
+        request_uri as request_path,
+        geoip_country_name as geo_location,
+        count(*) as request_count,
+        min(tp_timestamp) as first_seen,
+        max(tp_timestamp) as last_seen
+      from
+        nginx_access_log
+      where
+        geoip_country_name not in ('United States', 'Canada', 'United Kingdom')
+      group by
+        remote_addr,
+        request_uri,
+        geoip_country_name
+      having
+        count(*) > 50
+    )
+    select
+      *
+    from
+      ip_activity
+    order by
+      request_count desc;
+  EOQ
+}
+
+detection "nginx_session_cookie_theft" {
+  title           = "Session Cookie Theft Attempts"
+  description     = "Detect potential attempts to steal or manipulate web session cookies."
+  severity        = "critical"
+  display_columns = ["request_ip", "request_path", "cookie_header", "user_agent", "timestamp"]
+
+  query = query.nginx_session_cookie_theft
+
+  tags = merge(local.nginx_security_common_tags, {
+    mitre_attack_ids = "TA0005:T1550.004"
+  })
+}
+
+query "nginx_session_cookie_theft" {
+  sql = <<-EOQ
+    select
+      remote_addr as request_ip,
+      request_uri as request_path,
+      http_cookie as cookie_header,
+      http_user_agent as user_agent,
+      tp_timestamp as timestamp
+    from
+      nginx_access_log
+    where
+      -- Detect cookie manipulation patterns
+      (http_cookie like '%document.cookie%'
+      or http_cookie like '%<script%'
+      or http_cookie like '%eval(%'
+      or http_cookie like '%alert(%')
+      -- Detect multiple different session IDs from same IP
+      or remote_addr in (
+        select remote_addr
+        from nginx_access_log
+        where http_cookie is not null
+        group by remote_addr
+        having count(distinct http_cookie) > 10
+      )
+    order by
+      tp_timestamp desc;
+  EOQ
+}
