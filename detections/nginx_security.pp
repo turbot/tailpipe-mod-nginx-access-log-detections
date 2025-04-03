@@ -356,7 +356,7 @@ detection "nginx_protocol_violations" {
   query = query.nginx_protocol_violations
 
   tags = merge(local.nginx_security_common_tags, {
-    type = "Protocol"
+    mitre_attack_ids = "TA0005:T1211,TA0040:T1499.004"
   })
 }
 
@@ -389,7 +389,7 @@ detection "nginx_rate_limit_violations" {
   query = query.nginx_rate_limit_violations
 
   tags = merge(local.nginx_security_common_tags, {
-    type = "DDoS"
+    mitre_attack_ids = "TA0040:T1499.002"
   })
 }
 
@@ -428,7 +428,7 @@ detection "nginx_bot_detection" {
   query = query.nginx_bot_detection
 
   tags = merge(local.nginx_security_common_tags, {
-    type = "Bot"
+    mitre_attack_ids = "TA0043:T1595.002,TA0043:T1592.002"
   })
 }
 

@@ -18,7 +18,9 @@ benchmark "nginx_performance_detections" {
     detection.nginx_ddos_early_warning
   ]
 
-  tags = local.nginx_performance_common_tags
+  tags = merge(local.nginx_performance_common_tags, {
+    type = "Benchmark"
+  })
 }
 
 detection "nginx_slow_response_time" {
