@@ -9,11 +9,10 @@ benchmark "nginx_compliance_detections" {
   description = "This benchmark contains compliance-focused detections when scanning Nginx access logs."
   type        = "detection"
   children = [
-    detection.nginx_pii_data_exposure,
-    detection.nginx_restricted_resource_access,
-    detection.nginx_unauthorized_ip_access,
-    # detection.nginx_regulatory_violations,
-    detection.nginx_data_privacy_requirements
+    detection.nginx_pii_data_exposed,
+    detection.nginx_restricted_resource_accessed,
+    detection.nginx_unauthorized_ip_accessed,
+    detection.nginx_data_privacy_requirements_violated
   ]
 
   tags = merge(local.nginx_compliance_common_tags, {
@@ -21,20 +20,20 @@ benchmark "nginx_compliance_detections" {
   })
 }
 
-detection "nginx_pii_data_exposure" {
-  title           = "PII Data Exposure in URLs"
-  description     = "Detect potential exposure of Personally Identifiable Information (PII) in URLs."
+detection "nginx_pii_data_exposed" {
+  title           = "Nginx PII Data Exposed"
+  description     = "Detect when personally identifiable information (PII) was exposed in Nginx URLs to check for potential data privacy violations, regulatory non-compliance, or sensitive information leakage risks."
   severity        = "critical"
   display_columns = ["request_ip", "request_path", "pii_type", "status_code", "timestamp"]
 
-  query = query.nginx_pii_data_exposure
+  query = query.nginx_pii_data_exposed
 
   tags = merge(local.nginx_compliance_common_tags, {
-    mitre_attack_ids = "TA0009:T1213" // Collection: Data from Information Repositories
+    mitre_attack_ids = "TA0009:T1213"
   })
 }
 
-query "nginx_pii_data_exposure" {
+query "nginx_pii_data_exposed" {
   sql = <<-EOQ
     with pii_patterns as (
       select request_uri as request_path,
@@ -66,20 +65,20 @@ query "nginx_pii_data_exposure" {
   EOQ
 }
 
-detection "nginx_restricted_resource_access" {
-  title           = "Restricted Resource Access"
-  description     = "Detect access attempts to restricted resources or administrative areas."
+detection "nginx_restricted_resource_accessed" {
+  title           = "Nginx Restricted Resource Accessed"
+  description     = "Detect when restricted resources or administrative areas were accessed in Nginx logs to check for potential unauthorized access, privilege escalation, or inadequate access control risks."
   severity        = "high"
   display_columns = ["request_ip", "request_path", "request_method", "status_code", "timestamp"]
 
-  query = query.nginx_restricted_resource_access
+  query = query.nginx_restricted_resource_accessed
 
   tags = merge(local.nginx_compliance_common_tags, {
-    mitre_attack_ids = "TA0007:T1083,TA0001:T1190" // Discovery: File and Directory Discovery, Initial Access: Exploit Public-Facing Application
+    mitre_attack_ids = "TA0007:T1083,TA0001:T1190"
   })
 }
 
-query "nginx_restricted_resource_access" {
+query "nginx_restricted_resource_accessed" {
   sql = <<-EOQ
     select
       remote_addr as request_ip,
@@ -106,20 +105,20 @@ query "nginx_restricted_resource_access" {
   EOQ
 }
 
-detection "nginx_unauthorized_ip_access" {
-  title           = "Unauthorized IP Range Access"
-  description     = "Detect access attempts from unauthorized IP ranges or geographic locations."
+detection "nginx_unauthorized_ip_accessed" {
+  title           = "Nginx Unauthorized IP Accessed"
+  description     = "Detect when access from unauthorized IP ranges or geographic locations was detected in Nginx logs to check for potential network-level access control bypasses, geofencing violations, or unauthorized resource access risks."
   severity        = "high"
   display_columns = ["request_ip", "request_count", "first_access", "last_access"]
 
-  query = query.nginx_unauthorized_ip_access
+  query = query.nginx_unauthorized_ip_accessed
 
   tags = merge(local.nginx_compliance_common_tags, {
-    mitre_attack_ids = "TA0005:T1535" // Defense Evasion: Unused/Unsupported Cloud Regions
+    mitre_attack_ids = "TA0005:T1535"
   })
 }
 
-query "nginx_unauthorized_ip_access" {
+query "nginx_unauthorized_ip_accessed" {
   sql = <<-EOQ
     with unauthorized_access as (
       select
@@ -145,73 +144,20 @@ query "nginx_unauthorized_ip_access" {
   EOQ
 }
 
-# detection "nginx_regulatory_violations" {
-#   title           = "Regulatory Compliance Violations"
-#   description     = "Detect potential violations of regulatory compliance requirements."
-#   severity        = "high"
-#   display_columns = ["violation_type", "request_count", "unique_ips", "first_occurrence", "last_occurrence"]
-
-#   query = query.nginx_regulatory_violations
-
-#   tags = merge(local.nginx_compliance_common_tags, {
-#     type = "Regulatory"
-#   })
-# }
-
-# query "nginx_regulatory_violations" {
-#   sql = <<-EOQ
-#     with violations as (
-#       select
-#         case
-#           when request_uri ~ '/api/v[0-9]+/payment' then 'PCI-DSS Payment API Access'
-#           when request_uri ~ '/health' then 'HIPAA Health Data Access'
-#           when request_uri ~ '/pii/' then 'GDPR PII Access'
-#           when status = 405 then 'Method Not Allowed'
-#           when status = 403 then 'Forbidden Access'
-#         end as violation_type,
-#         count(*) as request_count,
-#         count(distinct remote_addr) as unique_ips,
-#         min(tp_timestamp) as first_occurrence,
-#         max(tp_timestamp) as last_occurrence
-#       from
-#         nginx_access_log
-#       where
-#         request_uri ~ '/api/v[0-9]+/payment'
-#         or request_uri ~ '/health'
-#         or request_uri ~ '/pii/'
-#         or status in (403, 405)
-#       group by
-#         case
-#           when request_uri ~ '/api/v[0-9]+/payment' then 'PCI-DSS Payment API Access'
-#           when request_uri ~ '/health' then 'HIPAA Health Data Access'
-#           when request_uri ~ '/pii/' then 'GDPR PII Access'
-#           when status = 405 then 'Method Not Allowed'
-#           when status = 403 then 'Forbidden Access'
-#         end
-#     )
-#     select
-#       *
-#     from
-#       violations
-#     order by
-#       request_count desc;
-#   EOQ
-# }
-
-detection "nginx_data_privacy_requirements" {
-  title           = "Data Privacy Requirements"
-  description     = "Monitor compliance with data privacy requirements and sensitive data handling."
+detection "nginx_data_privacy_requirements_violated" {
+  title           = "Nginx Data Privacy Requirements Violated"
+  description     = "Detect when data privacy requirements were violated in Nginx logs to check for potential regulatory non-compliance, inadequate data protection controls, or sensitive information handling risks."
   severity        = "high"
   display_columns = ["endpoint", "total_requests", "sensitive_data_count", "unique_ips"]
 
-  query = query.nginx_data_privacy_requirements
+  query = query.nginx_data_privacy_requirements_violated
 
   tags = merge(local.nginx_compliance_common_tags, {
-    mitre_attack_ids = "TA0009:T1213,TA0043:T1592" // Collection: Data from Information Repositories, Reconnaissance: Gather Victim Host Information
+    mitre_attack_ids = "TA0009:T1213,TA0043:T1592"
   })
 }
 
-query "nginx_data_privacy_requirements" {
+query "nginx_data_privacy_requirements_violated" {
   sql = <<-EOQ
     with privacy_endpoints as (
       select

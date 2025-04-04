@@ -1,6 +1,6 @@
 benchmark "nginx_access_log_detections" {
   title       = "Nginx Access Log Detections"
-  description = "This benchmark contains recommendations when scanning Nginx access logs."
+  description = "This benchmark contains detections for security, operational, performance, and compliance issues when analyzing Nginx access logs."
   type        = "detection"
   children = [
     benchmark.nginx_security_detections,
