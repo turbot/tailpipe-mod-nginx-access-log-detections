@@ -4,4 +4,3 @@ Detect when access from unauthorized IP ranges or geographic locations was detec
 
 **References**:
 - [NIST: Network Security](https://csrc.nist.gov/publications/detail/sp/800-207/final)
-- [Nginx: IP-Based Access Control](https://docs.nginx.com/nginx/admin-guide/security-controls/controlling-access-by-ip-address/)

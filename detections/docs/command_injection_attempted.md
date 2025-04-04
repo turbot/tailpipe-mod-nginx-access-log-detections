@@ -4,7 +4,6 @@ Detect potential command injection attempts in request parameters. Command injec
 
 **References**:
 - [OWASP: Command Injection](https://owasp.org/www-community/attacks/Command_Injection)
-- [MITRE ATT&CK: Command and Scripting Interpreter](https://attack.mitre.org/techniques/T1059/)
 - [PortSwigger: OS Command Injection](https://portswigger.net/web-security/os-command-injection)
 - [CWE-77: Improper Neutralization of Special Elements used in a Command](https://cwe.mitre.org/data/definitions/77.html)
 - [NIST: Security Strategies for Microservices-based Application Systems](https://csrc.nist.gov/publications/detail/sp/800-204/final) 
