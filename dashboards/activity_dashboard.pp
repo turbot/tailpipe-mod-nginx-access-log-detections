@@ -1,6 +1,6 @@
 dashboard "activity_dashboard" {
   title         = "Nginx Log Activity Dashboard"
-  documentation = file("./dashboards/docs/nginx_activity_dashboard.md")
+  documentation = file("./dashboards/docs/activity_dashboard.md")
 
   tags = {
     type    = "Dashboard"
@@ -63,14 +63,14 @@ dashboard "activity_dashboard" {
     }
 
     chart {
-      title = "Top 10 Clients (Request Count)"
+      title = "Top 10 Clients by Request Count"
       query = query.activity_dashboard_top_10_clients
       width = 6
       type  = "table"
     }
 
     chart {
-      title = "Top 10 URIs (Request Count)"
+      title = "Top 10 URIs by Request Count"
       query = query.activity_dashboard_top_10_urls
       width = 6
       type  = "table"
@@ -84,7 +84,7 @@ dashboard "activity_dashboard" {
     }
 
     chart {
-      title = "Top Client Error Paths"
+      title = "Top 10 Client Error Paths"
       query = query.activity_dashboard_client_error_paths
       width = 6
       type  = "table"
@@ -99,7 +99,7 @@ query "activity_dashboard_total_logs" {
 
   sql = <<-EOQ
     select
-      count(*) as "Total Requests"
+      count(*) as "Total Logs"
     from 
       nginx_access_log;
   EOQ
@@ -164,7 +164,7 @@ query "activity_dashboard_error_count" {
 }
 
 query "activity_dashboard_top_10_clients" {
-  title       = "Top 10 Clients"
+  title       = "Top 10 Clients by Request Count"
   description = "List the top 10 client IPs by request count."
 
   sql = <<-EOQ
@@ -186,7 +186,7 @@ query "activity_dashboard_top_10_clients" {
 }
 
 query "activity_dashboard_top_10_urls" {
-  title       = "Top 10 URIs"
+  title       = "Top 10 URIs by Request Count"
   description = "List the top 10 requested URIs by request count."
 
   sql = <<-EOQ
@@ -243,7 +243,7 @@ query "activity_dashboard_status_distribution" {
         when status between 500 and 599 then '5xx Server Error'
         else 'Other'
       end as "Status Category",
-      count(*) as "Count"
+      count(*) as "Requests"
     from
       nginx_access_log
     where
@@ -318,13 +318,13 @@ query "activity_dashboard_slowest_endpoints" {
 }
 
 query "activity_dashboard_client_error_paths" {
-  title       = "Top Client Error Paths"
+  title       = "Top 10 Client Error Paths"
   description = "List of paths that generated the most client errors (status 400-499)."
 
   sql = <<-EOQ
     select
       request_uri as "Path",
-      count(*) as "Error Count",
+      count(*) as "Errors",
       string_agg(distinct status::text, ', ' order by status::text) as "Status Codes"
     from
       nginx_access_log
