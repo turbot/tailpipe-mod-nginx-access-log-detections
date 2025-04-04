@@ -91,7 +91,7 @@ query "nginx_directory_traversal_attempts" {
     from
       nginx_access_log
     where
-       -- Plain directory traversal attempts
+      -- Plain directory traversal attempts
       request_uri like '%../%'
       or request_uri like '%/../%'
       or request_uri like '%/./%'

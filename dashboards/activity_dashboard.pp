@@ -1,8 +1,9 @@
 dashboard "activity_dashboard" {
-  title = "Nginx Log Activity Dashboard"
+  title         = "Nginx Log Activity Dashboard"
+  documentation = file("./dashboards/docs/nginx_activity_dashboard.md")
 
   tags = {
-    type = "Dashboard"
+    type    = "Dashboard"
     service = "Nginx"
   }
 
@@ -34,6 +35,34 @@ dashboard "activity_dashboard" {
 
   container {
     chart {
+      title = "Status Code Distribution"
+      query = query.activity_dashboard_status_distribution
+      width = 6
+      type  = "pie"
+    }
+
+    chart {
+      title = "HTTP Method Distribution"
+      query = query.activity_dashboard_method_distribution
+      width = 6
+      type  = "column"
+    }
+
+    chart {
+      title = "Requests per Day"
+      query = query.activity_dashboard_requests_per_day
+      width = 6
+      type  = "line"
+    }
+
+    chart {
+      title = "User Agents Distribution"
+      query = query.activity_dashboard_user_agents_distribution
+      width = 6
+      type  = "pie"
+    }
+
+    chart {
       title = "Top 10 Clients (Request Count)"
       query = query.activity_dashboard_top_10_clients
       width = 6
@@ -48,58 +77,42 @@ dashboard "activity_dashboard" {
     }
 
     chart {
-      title = "Status Code Distribution"
-      query = query.activity_dashboard_status_distribution
-      width = 6
-      type  = "pie"
-    }
-
-    chart {
       title = "Top 10 Slowest Endpoints"
       query = query.activity_dashboard_slowest_endpoints
       width = 6
       type  = "table"
     }
-  }
 
-  container {
     chart {
-      title = "Requests by Hour of Day"
-      query = query.activity_dashboard_requests_by_hour
+      title = "Top Client Error Paths"
+      query = query.activity_dashboard_client_error_paths
       width = 6
-      type  = "column"
-    }
-
-    chart {
-      title = "Requests by Day of Week"
-      query = query.activity_dashboard_requests_by_day
-      width = 6
-      type  = "bar"
-    }
-  }
-
-  container {
-    chart {
-      title = "Request Volume Over Time"
-      query = query.activity_dashboard_request_volume
-      width = 12
-      type  = "line"
-      display = "line"
+      type  = "table"
     }
   }
 }
 
 # Queries
 query "activity_dashboard_total_logs" {
+  title       = "Log Count"
+  description = "Count the total Nginx log entries."
+
   sql = <<-EOQ
     select
       count(*) as "Total Requests"
     from 
       nginx_access_log;
   EOQ
+
+  tags = {
+    folder = "Nginx"
+  }
 }
 
 query "activity_dashboard_success_count" {
+  title       = "Successful Request Count"
+  description = "Count of successful HTTP requests (status 200-399)."
+
   sql = <<-EOQ
     select
       count(*) as "Successful (200-399)"
@@ -108,9 +121,16 @@ query "activity_dashboard_success_count" {
     where
       status between 200 and 399;
   EOQ
+
+  tags = {
+    folder = "Nginx"
+  }
 }
 
 query "activity_dashboard_bad_request_count" {
+  title       = "Bad Request Count"
+  description = "Count of client error HTTP requests (status 400-499)."
+
   sql = <<-EOQ
     select
       count(*) as "Bad Requests (400-499)"
@@ -119,9 +139,16 @@ query "activity_dashboard_bad_request_count" {
     where
       status between 400 and 499;
   EOQ
+
+  tags = {
+    folder = "Nginx"
+  }
 }
 
 query "activity_dashboard_error_count" {
+  title       = "Server Error Count"
+  description = "Count of server error HTTP requests (status 500-599)."
+
   sql = <<-EOQ
     select
       count(*) as "Server Errors (500-599)"
@@ -130,9 +157,16 @@ query "activity_dashboard_error_count" {
     where
       status between 500 and 599;
   EOQ
+
+  tags = {
+    folder = "Nginx"
+  }
 }
 
 query "activity_dashboard_top_10_clients" {
+  title       = "Top 10 Clients"
+  description = "List the top 10 client IPs by request count."
+
   sql = <<-EOQ
     select
       remote_addr as "Client IP",
@@ -145,74 +179,61 @@ query "activity_dashboard_top_10_clients" {
       count(*) desc
     limit 10;
   EOQ
+
+  tags = {
+    folder = "Nginx"
+  }
 }
 
 query "activity_dashboard_top_10_urls" {
+  title       = "Top 10 URIs"
+  description = "List the top 10 requested URIs by request count."
+
   sql = <<-EOQ
     select
       request_uri as "URL",
       count(*) as "Request Count"
     from
       nginx_access_log
+    where
+      request_uri is not null
     group by
       request_uri
     order by
       count(*) desc
     limit 10;
   EOQ
+
+  tags = {
+    folder = "Nginx"
+  }
 }
 
-query "activity_dashboard_requests_by_hour" {
-  sql = <<-EOQ
-    select
-      extract(hour from tp_timestamp) as "Hour",
-      count(*) as "Request Count"
-    from
-      nginx_access_log
-    group by
-      extract(hour from tp_timestamp)
-    order by
-      extract(hour from tp_timestamp);
-  EOQ
-}
+query "activity_dashboard_requests_per_day" {
+  title       = "Requests per Day"
+  description = "Count of requests grouped by day."
 
-query "activity_dashboard_requests_by_day" {
-  sql = <<-EOQ
-    select
-      case extract(dow from tp_timestamp)
-        when 0 then 'Sunday'
-        when 1 then 'Monday'
-        when 2 then 'Tuesday'
-        when 3 then 'Wednesday'
-        when 4 then 'Thursday'
-        when 5 then 'Friday'
-        when 6 then 'Saturday'
-      end as "Day of Week",
-      count(*) as "Request Count"
-    from
-      nginx_access_log
-    group by
-      extract(dow from tp_timestamp)
-    order by
-      extract(dow from tp_timestamp);
-  EOQ
-}
-
-query "activity_dashboard_request_volume" {
   sql = <<-EOQ
     select
       strftime(tp_timestamp, '%Y-%m-%d') as "Date",
-      count(*) as "Daily Requests"
+      count(*) as "Request Count"
     from
       nginx_access_log
     group by
       strftime(tp_timestamp, '%Y-%m-%d')
     order by
-      strftime(tp_timestamp, '%Y-%m-%d') asc;
+      strftime(tp_timestamp, '%Y-%m-%d');
   EOQ
+
+  tags = {
+    folder = "Nginx"
+  }
 }
 
 query "activity_dashboard_status_distribution" {
+  title       = "Status Code Distribution"
+  description = "Distribution of HTTP status codes by category."
+
   sql = <<-EOQ
     select
       case
@@ -225,6 +246,8 @@ query "activity_dashboard_status_distribution" {
       count(*) as "Count"
     from
       nginx_access_log
+    where
+      status is not null
     group by
       case
         when status between 200 and 299 then '2xx Success'
@@ -234,9 +257,39 @@ query "activity_dashboard_status_distribution" {
         else 'Other'
       end;
   EOQ
+
+  tags = {
+    folder = "Nginx"
+  }
+}
+
+query "activity_dashboard_method_distribution" {
+  title       = "HTTP Method Distribution"
+  description = "Distribution of HTTP methods used in requests."
+
+  sql = <<-EOQ
+    select
+      request_method as "HTTP Method",
+      count(*) as "Request Count"
+    from
+      nginx_access_log
+    where
+      request_method is not null
+    group by
+      request_method
+    order by
+      count(*) desc;
+  EOQ
+
+  tags = {
+    folder = "Nginx"
+  }
 }
 
 query "activity_dashboard_slowest_endpoints" {
+  title       = "Top 10 Slowest Endpoints"
+  description = "List of the 10 slowest endpoints by average response time."
+
   sql = <<-EOQ
     select
       request_uri as "Endpoint",
@@ -247,6 +300,9 @@ query "activity_dashboard_slowest_endpoints" {
       count(*) as "Request Count"
     from
       nginx_access_log
+    where
+      request_uri is not null
+      and request_time > 0
     group by
       request_uri
     having
@@ -255,4 +311,79 @@ query "activity_dashboard_slowest_endpoints" {
       avg(request_time) desc
     limit 10;
   EOQ
+
+  tags = {
+    folder = "Nginx"
+  }
+}
+
+query "activity_dashboard_client_error_paths" {
+  title       = "Top Client Error Paths"
+  description = "List of paths that generated the most client errors (status 400-499)."
+
+  sql = <<-EOQ
+    select
+      request_uri as "Path",
+      count(*) as "Error Count",
+      string_agg(distinct status::text, ', ' order by status::text) as "Status Codes"
+    from
+      nginx_access_log
+    where
+      status between 400 and 499
+      and request_uri is not null
+    group by
+      request_uri
+    order by
+      count(*) desc
+    limit 10;
+  EOQ
+
+  tags = {
+    folder = "Nginx"
+  }
+}
+
+query "activity_dashboard_user_agents_distribution" {
+  title       = "User Agents Distribution"
+  description = "Distribution of user agents in requests."
+
+  sql = <<-EOQ
+    select
+      case
+        when http_user_agent is null then 'Unknown'
+        when http_user_agent like '%Chrome%' then 'Chrome'
+        when http_user_agent like '%Firefox%' then 'Firefox'
+        when http_user_agent like '%Safari%' and http_user_agent not like '%Chrome%' then 'Safari'
+        when http_user_agent like '%MSIE%' or http_user_agent like '%Trident%' then 'Internet Explorer'
+        when http_user_agent like '%Edge%' then 'Edge'
+        when http_user_agent like '%bot%' or http_user_agent like '%crawler%' then 'Bot/Crawler'
+        when http_user_agent like '%curl%' then 'Curl'
+        when http_user_agent like '%wget%' then 'Wget'
+        when http_user_agent like '%PostmanRuntime%' then 'Postman'
+        else 'Other'
+      end as "User Agent",
+      count(*) as "Request Count"
+    from
+      nginx_access_log
+    group by
+      case
+        when http_user_agent is null then 'Unknown'
+        when http_user_agent like '%Chrome%' then 'Chrome'
+        when http_user_agent like '%Firefox%' then 'Firefox'
+        when http_user_agent like '%Safari%' and http_user_agent not like '%Chrome%' then 'Safari'
+        when http_user_agent like '%MSIE%' or http_user_agent like '%Trident%' then 'Internet Explorer'
+        when http_user_agent like '%Edge%' then 'Edge'
+        when http_user_agent like '%bot%' or http_user_agent like '%crawler%' then 'Bot/Crawler'
+        when http_user_agent like '%curl%' then 'Curl'
+        when http_user_agent like '%wget%' then 'Wget'
+        when http_user_agent like '%PostmanRuntime%' then 'Postman'
+        else 'Other'
+      end
+    order by
+      count(*) desc;
+  EOQ
+
+  tags = {
+    folder = "Nginx"
+  }
 }
