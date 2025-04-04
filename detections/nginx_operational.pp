@@ -24,7 +24,7 @@ detection "nginx_error_rate_increased" {
   title           = "Nginx Error Rate Increased"
   description     = "Detect when error rate was increased in Nginx logs to check for potential system instability, service unavailability, or application failures that could impact user experience."
   severity        = "high"
-  display_columns = ["error_count", "total_requests", "error_rate", "window_start", "window_end"]
+  display_columns = local.detection_display_columns
 
   query = query.nginx_error_rate_increased
 
@@ -63,7 +63,7 @@ detection "nginx_traffic_spike_detected" {
   title           = "Nginx Traffic Spike Detected"
   description     = "Detect when unusual traffic spikes were detected in Nginx logs to check for potential denial of service attacks, viral content, or unexpected user behavior patterns."
   severity        = "medium"
-  display_columns = ["request_count", "avg_historical_requests", "deviation_percent", "window_start", "window_end"]
+  display_columns = local.detection_display_columns
 
   query = query.nginx_traffic_spike_detected
 
@@ -108,7 +108,7 @@ detection "nginx_bandwidth_usage_exceeded" {
   title           = "Nginx Bandwidth Usage Exceeded"
   description     = "Detect when bandwidth usage was exceeded in Nginx logs to check for potential cost overruns, infrastructure capacity issues, or malicious data exfiltration activities."
   severity        = "medium"
-  display_columns = ["request_ip", "endpoint", "total_bytes", "request_count", "avg_bytes_per_request"]
+  display_columns = local.detection_display_columns
 
   query = query.nginx_bandwidth_usage_exceeded
 
@@ -142,7 +142,7 @@ detection "nginx_endpoint_error_rate_increased" {
   title           = "Nginx Endpoint Error Rate Increased"
   description     = "Detect when endpoint error rate was increased in Nginx logs to check for specific application failures, problematic API endpoints, or targeted attack patterns affecting particular resources."
   severity        = "high"
-  display_columns = ["endpoint", "error_count", "total_requests", "error_rate"]
+  display_columns = local.detection_display_columns
 
   query = query.nginx_endpoint_error_rate_increased
 

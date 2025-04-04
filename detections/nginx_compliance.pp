@@ -24,7 +24,7 @@ detection "nginx_pii_data_exposed" {
   title           = "Nginx PII Data Exposed"
   description     = "Detect when personally identifiable information (PII) was exposed in Nginx URLs to check for potential data privacy violations, regulatory non-compliance, or sensitive information leakage risks."
   severity        = "critical"
-  display_columns = ["request_ip", "request_path", "pii_type", "status_code", "timestamp"]
+  display_columns = local.detection_display_columns
 
   query = query.nginx_pii_data_exposed
 
@@ -69,7 +69,7 @@ detection "nginx_restricted_resource_accessed" {
   title           = "Nginx Restricted Resource Accessed"
   description     = "Detect when restricted resources or administrative areas were accessed in Nginx logs to check for potential unauthorized access, privilege escalation, or inadequate access control risks."
   severity        = "high"
-  display_columns = ["request_ip", "request_path", "request_method", "status_code", "timestamp"]
+  display_columns = local.detection_display_columns
 
   query = query.nginx_restricted_resource_accessed
 
@@ -109,7 +109,7 @@ detection "nginx_unauthorized_ip_accessed" {
   title           = "Nginx Unauthorized IP Accessed"
   description     = "Detect when access from unauthorized IP ranges or geographic locations was detected in Nginx logs to check for potential network-level access control bypasses, geofencing violations, or unauthorized resource access risks."
   severity        = "high"
-  display_columns = ["request_ip", "request_count", "first_access", "last_access"]
+  display_columns = local.detection_display_columns
 
   query = query.nginx_unauthorized_ip_accessed
 
@@ -148,7 +148,7 @@ detection "nginx_data_privacy_requirements_violated" {
   title           = "Nginx Data Privacy Requirements Violated"
   description     = "Detect when data privacy requirements were violated in Nginx logs to check for potential regulatory non-compliance, inadequate data protection controls, or sensitive information handling risks."
   severity        = "high"
-  display_columns = ["endpoint", "total_requests", "sensitive_data_count", "unique_ips"]
+  display_columns = local.detection_display_columns
 
   query = query.nginx_data_privacy_requirements_violated
 

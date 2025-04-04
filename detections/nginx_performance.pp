@@ -27,7 +27,7 @@ detection "nginx_response_time_exceeded" {
   title           = "Nginx Response Time Exceeded"
   description     = "Detect when response time was exceeded in Nginx logs to check for potential performance bottlenecks, resource constraints, or application inefficiencies that degrade user experience."
   severity        = "high"
-  display_columns = ["endpoint", "avg_response_time", "request_count", "p95_response_time"]
+  display_columns = local.detection_display_columns
 
   query = query.nginx_response_time_exceeded
 
@@ -70,7 +70,7 @@ detection "nginx_response_time_anomaly_detected" {
   title           = "Nginx Response Time Anomaly Detected"
   description     = "Detect when response time anomalies were detected in Nginx logs to check for potential application degradation, infrastructure changes, or unusual traffic patterns affecting system performance."
   severity        = "high"
-  display_columns = ["window_start", "window_end", "avg_response_time", "historical_avg", "deviation_percent"]
+  display_columns = local.detection_display_columns
 
   query = query.nginx_response_time_anomaly_detected
 
@@ -115,7 +115,7 @@ detection "nginx_upstream_latency_increased" {
   title           = "Nginx Upstream Latency Increased"
   description     = "Detect when upstream server latency was increased in Nginx logs to check for potential backend service issues, network congestion, or resource constraints affecting dependent systems."
   severity        = "medium"
-  display_columns = ["upstream", "avg_upstream_time", "request_count", "max_upstream_time"]
+  display_columns = local.detection_display_columns
 
   query = query.nginx_upstream_latency_increased
 
@@ -148,7 +148,7 @@ detection "nginx_request_queue_size_increased" {
   title           = "Nginx Request Queue Size Increased"
   description     = "Detect when request queue size was increased in Nginx logs to check for potential capacity limitations, traffic spikes, or worker process bottlenecks affecting server responsiveness."
   severity        = "high"
-  display_columns = ["window_start", "window_end", "queue_size", "request_count"]
+  display_columns = local.detection_display_columns
 
   query = query.nginx_request_queue_size_increased
 
@@ -188,7 +188,7 @@ detection "nginx_memory_leak_detected" {
   title           = "Nginx Memory Leak Detected"
   description     = "Detect when potential memory leak was detected in Nginx logs to check for application resource mismanagement, memory corruption, or growing response sizes indicating data accumulation issues."
   severity        = "critical"
-  display_columns = ["endpoint", "avg_response_size", "growth_rate", "window_start"]
+  display_columns = local.detection_display_columns
 
   query = query.nginx_memory_leak_detected
 
@@ -236,7 +236,7 @@ detection "nginx_connection_pool_exhausted" {
   title           = "Nginx Connection Pool Exhausted"
   description     = "Detect when connection pool was exhausted in Nginx logs to check for potential resource limits, connection leaks, or traffic surges exceeding server capacity."
   severity        = "critical"
-  display_columns = ["timestamp", "concurrent_connections", "rejection_rate"]
+  display_columns = local.detection_display_columns
 
   query = query.nginx_connection_pool_exhausted
 
@@ -275,7 +275,7 @@ detection "nginx_ddos_early_warning_detected" {
   title           = "Nginx DDoS Early Warning Detected"
   description     = "Detect when early signs of DDoS attack were detected in Nginx logs to check for potential coordinated attacks, traffic anomalies, or resource exhaustion attempts targeting the web server."
   severity        = "critical"
-  display_columns = ["window_start", "request_rate", "unique_ips", "avg_response_time"]
+  display_columns = local.detection_display_columns
 
   query = query.nginx_ddos_early_warning_detected
 
