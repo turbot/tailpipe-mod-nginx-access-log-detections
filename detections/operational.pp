@@ -133,8 +133,7 @@ query "bandwidth_usage_exceeded" {
     having
       sum(bytes_sent) > 100 * 1024 * 1024  -- 100MB threshold
     order by
-      total_bytes desc
-    limit 100;
+      total_bytes desc;
   EOQ
 }
 
