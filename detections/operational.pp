@@ -1,5 +1,5 @@
 locals {
-  operational_common_tags = merge(local.access_log_common_tags, {
+  operational_common_tags = merge(local.nginx_access_log_detections_common_tags, {
     category = "Operational"
   })
 }
@@ -120,11 +120,7 @@ detection "bandwidth_usage_exceeded" {
 query "bandwidth_usage_exceeded" {
   sql = <<-EOQ
     select
-      remote_addr as request_ip,
-      request_uri as endpoint,
-      sum(bytes_sent) as total_bytes,
-      count(*) as request_count,
-      round((sum(bytes_sent)::float / count(*))::numeric, 2) as avg_bytes_per_request
+      ${local.detection_sql_columns}
     from
       nginx_access_log
     group by

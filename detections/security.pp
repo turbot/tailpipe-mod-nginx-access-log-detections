@@ -1,5 +1,5 @@
 locals {
-  security_common_tags = merge(local.access_log_common_tags, {
+  security_common_tags = merge(local.nginx_access_log_detections_common_tags, {
     category = "Security"
   })
 }
@@ -325,11 +325,7 @@ detection "sensitive_file_accessed" {
 query "sensitive_file_accessed" {
   sql = <<-EOQ
     select
-      remote_addr as request_ip,
-      request_uri as request_path,
-      request_method,
-      status as status_code,
-      tp_timestamp as timestamp
+      ${local.detection_sql_columns}
     from
       nginx_access_log
     where
@@ -367,12 +363,7 @@ detection "protocol_violated" {
 query "protocol_violated" {
   sql = <<-EOQ
     select
-      remote_addr as request_ip,
-      request_uri as request_path,
-      request_method,
-      status as status_code,
-      server_protocol as http_version,
-      tp_timestamp as timestamp
+      ${local.detection_sql_columns}
     from
       nginx_access_log
     where
@@ -489,8 +480,7 @@ detection "api_key_exposed" {
 query "api_key_exposed" {
   sql = <<-EOQ
     select
-      remote_addr as request_ip,
-      request_uri as request_path,
+      ${local.detection_sql_columns}
       case
         when request_uri ~ '(?i)[a-z0-9]{32,}' then 'Potential API Key'
         when request_uri ~ '(?i)bearer\s+[a-zA-Z0-9-._~+/]+=*' then 'Bearer Token'
@@ -525,6 +515,7 @@ query "zero_day_attack_patterns" {
   sql = <<-EOQ
     with unusual_patterns as (
       select
+        ${local.detection_sql_columns}
         case
           when request_uri ~ '[\\x00-\\x01]|\\xff' then 'Binary Data Injection'
           when request_uri ~ '\\.\\.|%2e%2e' then 'Path Manipulation'
@@ -619,11 +610,7 @@ detection "session_cookie_theft_attempted" {
 query "session_cookie_theft_attempted" {
   sql = <<-EOQ
     select
-      remote_addr as request_ip,
-      request_uri as request_path,
-      http_cookie as cookie_header,
-      http_user_agent as user_agent,
-      tp_timestamp as timestamp
+      ${local.detection_sql_columns}
     from
       nginx_access_log
     where
@@ -653,7 +640,7 @@ detection "pii_data_exposed" {
 
   query = query.pii_data_exposed
 
-  tags = merge(local.compliance_common_tags, {
+  tags = merge(local.security_common_tags, {
     mitre_attack_ids = "TA0009:T1213"
   })
 }
@@ -661,10 +648,8 @@ detection "pii_data_exposed" {
 query "pii_data_exposed" {
   sql = <<-EOQ
     with pii_patterns as (
-      select request_uri as request_path,
-        remote_addr as request_ip,
-        status as status_code,
-        tp_timestamp as timestamp,
+      select 
+        ${local.detection_sql_columns}
         case
           when request_uri ~ '[0-9]{3}-[0-9]{2}-[0-9]{4}' then 'SSN'
           when request_uri ~ '[0-9]{16}' then 'Credit Card'
@@ -698,7 +683,7 @@ detection "restricted_resource_accessed" {
 
   query = query.restricted_resource_accessed
 
-  tags = merge(local.compliance_common_tags, {
+  tags = merge(local.security_common_tags, {
     mitre_attack_ids = "TA0007:T1083,TA0001:T1190"
   })
 }
@@ -706,11 +691,7 @@ detection "restricted_resource_accessed" {
 query "restricted_resource_accessed" {
   sql = <<-EOQ
     select
-      remote_addr as request_ip,
-      request_uri as request_path,
-      request_method,
-      status as status_code,
-      tp_timestamp as timestamp
+      ${local.detection_sql_columns}
     from
       nginx_access_log
     where
@@ -738,7 +719,7 @@ detection "unauthorized_ip_accessed" {
 
   query = query.unauthorized_ip_accessed
 
-  tags = merge(local.compliance_common_tags, {
+  tags = merge(local.security_common_tags, {
     mitre_attack_ids = "TA0005:T1535"
   })
 }
@@ -777,7 +758,7 @@ detection "data_privacy_requirements_violated" {
 
   query = query.data_privacy_requirements_violated
 
-  tags = merge(local.compliance_common_tags, {
+  tags = merge(local.security_common_tags, {
     mitre_attack_ids = "TA0009:T1213,TA0043:T1592"
   })
 }

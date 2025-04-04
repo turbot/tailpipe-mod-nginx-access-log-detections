@@ -8,7 +8,7 @@ benchmark "access_log_detections" {
     benchmark.performance_detections,
   ]
 
-  tags = merge(local.access_log_common_tags, {
+  tags = merge(local.nginx_access_log_detections_common_tags, {
     type = "Benchmark"
   })
 }

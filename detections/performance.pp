@@ -1,5 +1,5 @@
 locals {
-  performance_common_tags = merge(local.access_log_common_tags, {
+  performance_common_tags = merge(local.nginx_access_log_detections_common_tags, {
     category = "Performance"
   })
 }
