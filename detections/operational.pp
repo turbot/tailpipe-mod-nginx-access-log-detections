@@ -23,6 +23,7 @@ benchmark "operational_detections" {
 detection "error_rate_increased" {
   title           = "Error Rate Increased"
   description     = "Detect when error rate was increased in logs to check for potential system instability, service unavailability, or application failures that could impact user experience."
+  documentation   = file("./detections/docs/error_rate_increased.md")
   severity        = "high"
   display_columns = local.detection_display_columns
 
@@ -62,6 +63,7 @@ query "error_rate_increased" {
 detection "traffic_spike_detected" {
   title           = "Traffic Spike Detected"
   description     = "Detect when unusual traffic spikes were detected in logs to check for potential denial of service attacks, viral content, or unexpected user behavior patterns."
+  documentation   = file("./detections/docs/traffic_spike_detected.md")
   severity        = "medium"
   display_columns = local.detection_display_columns
 
@@ -107,6 +109,7 @@ query "traffic_spike_detected" {
 detection "bandwidth_usage_exceeded" {
   title           = "Bandwidth Usage Exceeded"
   description     = "Detect when bandwidth usage was exceeded in logs to check for potential cost overruns, infrastructure capacity issues, or malicious data exfiltration activities."
+  documentation   = file("./detections/docs/bandwidth_usage_exceeded.md")
   severity        = "medium"
   display_columns = local.detection_display_columns
 
@@ -120,7 +123,11 @@ detection "bandwidth_usage_exceeded" {
 query "bandwidth_usage_exceeded" {
   sql = <<-EOQ
     select
-      ${local.detection_sql_columns}
+      remote_addr as request_ip,
+      request_uri as endpoint,
+      sum(bytes_sent) as total_bytes,
+      count(*) as request_count,
+      round((sum(bytes_sent)::float / count(*))::numeric, 2) as avg_bytes_per_request
     from
       nginx_access_log
     group by
@@ -136,6 +143,7 @@ query "bandwidth_usage_exceeded" {
 detection "endpoint_error_rate_increased" {
   title           = "Endpoint Error Rate Increased"
   description     = "Detect when endpoint error rate was increased in logs to check for specific application failures, problematic API endpoints, or targeted attack patterns affecting particular resources."
+  documentation   = file("./detections/docs/endpoint_error_rate_increased.md")
   severity        = "high"
   display_columns = local.detection_display_columns
 

@@ -24,7 +24,6 @@ benchmark "security_detections" {
     detection.sql_injection_attempted,
     detection.suspicious_user_agent_detected,
     detection.unauthorized_ip_accessed,
-    detection.unusual_region_accessed,
     detection.xss_attempted,
     detection.zero_day_pattern_detected,
   ]
@@ -37,6 +36,7 @@ benchmark "security_detections" {
 detection "sql_injection_attempted" {
   title           = "SQL Injection Attempted"
   description     = "Detect when SQL injection was attempted in access logs to check for potential database compromise, unauthorized data access, or data manipulation risks."
+  documentation   = file("./detections/docs/sql_injection_attempted.md")
   severity        = "critical"
   display_columns = local.detection_display_columns
 
@@ -74,6 +74,7 @@ query "sql_injection_attempted" {
 detection "directory_traversal_attempted" {
   title           = "Directory Traversal Attempted"
   description     = "Detect when directory traversal was attempted in access logs to check for unauthorized file system access, sensitive data exposure, or server configuration leakage risks."
+  documentation   = file("./detections/docs/directory_traversal_attempted.md")
   severity        = "high"
   display_columns = local.detection_display_columns
 
@@ -123,6 +124,7 @@ query "directory_traversal_attempted" {
 detection "authentication_brute_forced" {
   title           = "Authentication Brute Forced"
   description     = "Detect when authentication was brute forced in access logs to check for credential compromise, unauthorized access, or account takeover risks."
+  documentation   = file("./detections/docs/authentication_brute_forced.md")
   severity        = "high"
   display_columns = local.detection_display_columns
 
@@ -163,6 +165,7 @@ query "authentication_brute_forced" {
 detection "suspicious_user_agent_detected" {
   title           = "Suspicious User Agent Detected"
   description     = "Detect requests from known malicious or suspicious user agents."
+  documentation   = file("./detections/docs/suspicious_user_agent_detected.md")
   severity        = "medium"
   display_columns = local.detection_display_columns
 
@@ -208,6 +211,7 @@ query "suspicious_user_agents" {
 detection "xss_attempted" {
   title           = "Cross-Site Scripting (XSS) Attempted"
   description     = "Detect potential XSS attacks in request parameters and paths."
+  documentation   = file("./detections/docs/xss_attempted.md")
   severity        = "critical"
   display_columns = local.detection_display_columns
 
@@ -267,6 +271,7 @@ query "xss_attempts" {
 detection "command_injection_attempted" {
   title           = "Command Injection Attempted"
   description     = "Detect potential command injection attempts in request parameters."
+  documentation   = file("./detections/docs/command_injection_attempted.md")
   severity        = "critical"
   display_columns = local.detection_display_columns
 
@@ -312,6 +317,7 @@ query "command_injection_attempted" {
 detection "sensitive_file_accessed" {
   title           = "Sensitive File Access Attempted"
   description     = "Detect attempts to access sensitive configuration or system files."
+  documentation   = file("./detections/docs/sensitive_file_accessed.md")
   severity        = "high"
   display_columns = local.detection_display_columns
 
@@ -350,6 +356,7 @@ query "sensitive_file_accessed" {
 detection "protocol_violated" {
   title           = "HTTP Protocol Violations"
   description     = "Detect malformed requests and protocol violations that may indicate malicious activity."
+  documentation   = file("./detections/docs/protocol_violated.md")
   severity        = "medium"
   display_columns = local.detection_display_columns
 
@@ -378,6 +385,7 @@ query "protocol_violated" {
 detection "rate_limit_exceeded" {
   title           = "Rate Limit Exceeded"
   description     = "Detect IPs exceeding request rate limits, which may indicate DoS attempts or aggressive scanning."
+  documentation   = file("./detections/docs/rate_limit_exceeded.md")
   severity        = "high"
   display_columns = local.detection_display_columns
 
@@ -417,6 +425,7 @@ query "rate_limit_exceeded" {
 detection "bot_activity_detected" {
   title           = "Automated Bot Activity Detected"
   description     = "Detect patterns of automated bot activity based on request patterns and user agents."
+  documentation   = file("./detections/docs/bot_activity_detected.md")
   severity        = "medium"
   display_columns = local.detection_display_columns
 
@@ -467,6 +476,7 @@ query "bot_activity_detected" {
 detection "api_key_exposed" {
   title           = "API Key or Token Exposure"
   description     = "Detect potential exposure of API keys or tokens in URLs"
+  documentation   = file("./detections/docs/api_key_exposed.md")
   severity        = "critical"
   display_columns = local.detection_display_columns
 
@@ -480,13 +490,12 @@ detection "api_key_exposed" {
 query "api_key_exposed" {
   sql = <<-EOQ
     select
-      ${local.detection_sql_columns}
       case
         when request_uri ~ '(?i)[a-z0-9]{32,}' then 'Potential API Key'
         when request_uri ~ '(?i)bearer\s+[a-zA-Z0-9-._~+/]+=*' then 'Bearer Token'
         when request_uri ~ '(?i)key=[a-zA-Z0-9-]{20,}' then 'API Key Parameter'
       end as token_type,
-      tp_timestamp as timestamp
+      ${local.detection_sql_columns}
     from
       nginx_access_log
     where
@@ -501,6 +510,7 @@ query "api_key_exposed" {
 detection "zero_day_pattern_detected" {
   title           = "Potential Zero-Day Attack Pattern Detected"
   description     = "Detect unusual patterns that might indicate zero-day exploitation attempts"
+  documentation   = file("./detections/docs/zero_day_pattern_detected.md")
   severity        = "critical"
   display_columns = local.detection_display_columns
 
@@ -515,7 +525,6 @@ query "zero_day_attack_patterns" {
   sql = <<-EOQ
     with unusual_patterns as (
       select
-        ${local.detection_sql_columns}
         case
           when request_uri ~ '[\\x00-\\x01]|\\xff' then 'Binary Data Injection'
           when request_uri ~ '\\.\\.|%2e%2e' then 'Path Manipulation'
@@ -551,52 +560,10 @@ query "zero_day_attack_patterns" {
   EOQ
 }
 
-detection "unusual_region_accessed" {
-  title           = "Access from Unusual Cloud Regions"
-  description     = "Detect access attempts from unusual or unauthorized cloud regions based on IP geolocation."
-  severity        = "high"
-  display_columns = local.detection_display_columns
-
-  query = query.unusual_region_accessed
-
-  tags = merge(local.security_common_tags, {
-    mitre_attack_ids = "TA0005:T1535"
-  })
-}
-
-query "unusual_region_accessed" {
-  sql = <<-EOQ
-    with ip_activity as (
-      select
-        remote_addr as request_ip,
-        request_uri as request_path,
-        geoip_country_name as geo_location,
-        count(*) as request_count,
-        min(tp_timestamp) as first_seen,
-        max(tp_timestamp) as last_seen
-      from
-        nginx_access_log
-      where
-        geoip_country_name not in ('United States', 'Canada', 'United Kingdom')
-      group by
-        remote_addr,
-        request_uri,
-        geoip_country_name
-      having
-        count(*) > 50
-    )
-    select
-      *
-    from
-      ip_activity
-    order by
-      request_count desc;
-  EOQ
-}
-
 detection "session_cookie_theft_attempted" {
   title           = "Session Cookie Theft Attempted"
   description     = "Detect potential attempts to steal or manipulate web session cookies."
+  documentation   = file("./detections/docs/session_cookie_theft_attempted.md")
   severity        = "critical"
   display_columns = local.detection_display_columns
 
@@ -635,6 +602,7 @@ query "session_cookie_theft_attempted" {
 detection "pii_data_exposed" {
   title           = "PII Data Exposed"
   description     = "Detect when personally identifiable information (PII) was exposed in URLs to check for potential data privacy violations, regulatory non-compliance, or sensitive information leakage risks."
+  documentation   = file("./detections/docs/pii_data_exposed.md")
   severity        = "critical"
   display_columns = local.detection_display_columns
 
@@ -649,14 +617,14 @@ query "pii_data_exposed" {
   sql = <<-EOQ
     with pii_patterns as (
       select 
-        ${local.detection_sql_columns}
         case
           when request_uri ~ '[0-9]{3}-[0-9]{2}-[0-9]{4}' then 'SSN'
           when request_uri ~ '[0-9]{16}' then 'Credit Card'
           when request_uri ~ '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}' then 'Email'
           when request_uri ~ '(?:password|passwd|pwd)=[^&]+' then 'Password'
           when request_uri ~ '[0-9]{10}' then 'Phone Number'
-        end as pii_type
+        end as pii_type,
+        ${local.detection_sql_columns}
       from
         nginx_access_log
       where
@@ -678,6 +646,7 @@ query "pii_data_exposed" {
 detection "restricted_resource_accessed" {
   title           = "Restricted Resource Accessed"
   description     = "Detect when restricted resources or administrative areas were accessed in logs to check for potential unauthorized access, privilege escalation, or inadequate access control risks."
+  documentation   = file("./detections/docs/restricted_resource_accessed.md")
   severity        = "high"
   display_columns = local.detection_display_columns
 
@@ -714,6 +683,7 @@ query "restricted_resource_accessed" {
 detection "unauthorized_ip_accessed" {
   title           = "Unauthorized IP Accessed"
   description     = "Detect when access from unauthorized IP ranges or geographic locations was detected in logs to check for potential network-level access control bypasses, geofencing violations, or unauthorized resource access risks."
+  documentation   = file("./detections/docs/unauthorized_ip_accessed.md")
   severity        = "high"
   display_columns = local.detection_display_columns
 
@@ -753,6 +723,7 @@ query "unauthorized_ip_accessed" {
 detection "data_privacy_requirements_violated" {
   title           = "Data Privacy Requirements Violated"
   description     = "Detect when data privacy requirements were violated in logs to check for potential regulatory non-compliance, inadequate data protection controls, or sensitive information handling risks."
+  documentation   = file("./detections/docs/data_privacy_requirements_violated.md")
   severity        = "high"
   display_columns = local.detection_display_columns
 

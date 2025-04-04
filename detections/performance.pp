@@ -26,6 +26,7 @@ benchmark "performance_detections" {
 detection "response_time_exceeded" {
   title           = "Response Time Exceeded"
   description     = "Detect when response time was exceeded in logs to check for potential performance bottlenecks, resource constraints, or application inefficiencies that degrade user experience."
+  documentation   = file("./detections/docs/response_time_exceeded.md")
   severity        = "high"
   display_columns = local.detection_display_columns
 
@@ -69,6 +70,7 @@ query "response_time_exceeded" {
 detection "response_time_anomaly_detected" {
   title           = "Response Time Anomaly Detected"
   description     = "Detect when response time anomalies were detected in logs to check for potential application degradation, infrastructure changes, or unusual traffic patterns affecting system performance."
+  documentation   = file("./detections/docs/response_time_anomaly_detected.md")
   severity        = "high"
   display_columns = local.detection_display_columns
 
@@ -114,6 +116,7 @@ query "response_time_anomaly_detected" {
 detection "upstream_latency_increased" {
   title           = "Upstream Latency Increased"
   description     = "Detect when upstream server latency was increased in logs to check for potential backend service issues, network congestion, or resource constraints affecting dependent systems."
+  documentation   = file("./detections/docs/upstream_latency_increased.md")
   severity        = "medium"
   display_columns = local.detection_display_columns
 
@@ -147,6 +150,7 @@ query "upstream_latency_increased" {
 detection "request_queue_size_increased" {
   title           = "Request Queue Size Increased"
   description     = "Detect when request queue size was increased in logs to check for potential capacity limitations, traffic spikes, or worker process bottlenecks affecting server responsiveness."
+  documentation   = file("./detections/docs/request_queue_size_increased.md")
   severity        = "high"
   display_columns = local.detection_display_columns
 
@@ -187,6 +191,7 @@ query "request_queue_size_increased" {
 detection "memory_leak_detected" {
   title           = "Memory Leak Detected"
   description     = "Detect when potential memory leak was detected in logs to check for application resource mismanagement, memory corruption, or growing response sizes indicating data accumulation issues."
+  documentation   = file("./detections/docs/memory_leak_detected.md")
   severity        = "critical"
   display_columns = local.detection_display_columns
 
@@ -235,6 +240,7 @@ query "memory_leak_detected" {
 detection "connection_pool_exhausted" {
   title           = "Connection Pool Exhausted"
   description     = "Detect when connection pool was exhausted in logs to check for potential resource limits, connection leaks, or traffic surges exceeding server capacity."
+  documentation   = file("./detections/docs/connection_pool_exhausted.md")
   severity        = "critical"
   display_columns = local.detection_display_columns
 
@@ -274,6 +280,7 @@ query "connection_pool_exhausted" {
 detection "ddos_early_warning_detected" {
   title           = "DDoS Early Warning Detected"
   description     = "Detect when early signs of DDoS attack were detected in logs to check for potential coordinated attacks, traffic anomalies, or resource exhaustion attempts targeting the web server."
+  documentation   = file("./detections/docs/ddos_early_warning_detected.md")
   severity        = "critical"
   display_columns = local.detection_display_columns
 
