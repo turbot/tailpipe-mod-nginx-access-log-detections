@@ -1,42 +1,42 @@
 locals {
-  nginx_performance_common_tags = merge(local.nginx_access_log_detections_common_tags, {
+  performance_common_tags = merge(local.access_log_common_tags, {
     category = "Performance"
   })
 }
 
-benchmark "nginx_performance_detections" {
-  title       = "Nginx Performance Detections"
-  description = "This benchmark contains performance-focused detections when scanning Nginx access logs."
+benchmark "performance_detections" {
+  title       = "Performance Detections"
+  description = "This benchmark contains performance-focused detections when scanning access logs."
   type        = "detection"
   children = [
-    detection.nginx_response_time_exceeded,
-    detection.nginx_response_time_anomaly_detected,
-    detection.nginx_upstream_latency_increased,
-    detection.nginx_request_queue_size_increased,
-    detection.nginx_memory_leak_detected,
-    detection.nginx_connection_pool_exhausted,
-    detection.nginx_ddos_early_warning_detected
+    detection.response_time_exceeded,
+    detection.response_time_anomaly_detected,
+    detection.upstream_latency_increased,
+    detection.request_queue_size_increased,
+    detection.memory_leak_detected,
+    detection.connection_pool_exhausted,
+    detection.ddos_early_warning_detected
   ]
 
-  tags = merge(local.nginx_performance_common_tags, {
+  tags = merge(local.performance_common_tags, {
     type = "Benchmark"
   })
 }
 
-detection "nginx_response_time_exceeded" {
-  title           = "Nginx Response Time Exceeded"
-  description     = "Detect when response time was exceeded in Nginx logs to check for potential performance bottlenecks, resource constraints, or application inefficiencies that degrade user experience."
+detection "response_time_exceeded" {
+  title           = "Response Time Exceeded"
+  description     = "Detect when response time was exceeded in logs to check for potential performance bottlenecks, resource constraints, or application inefficiencies that degrade user experience."
   severity        = "high"
   display_columns = local.detection_display_columns
 
-  query = query.nginx_response_time_exceeded
+  query = query.response_time_exceeded
 
-  tags = merge(local.nginx_performance_common_tags, {
+  tags = merge(local.performance_common_tags, {
     mitre_attack_ids = "TA0040:T1499.004"
   })
 }
 
-query "nginx_response_time_exceeded" {
+query "response_time_exceeded" {
   sql = <<-EOQ
     with response_stats as (
       select
@@ -66,20 +66,20 @@ query "nginx_response_time_exceeded" {
   EOQ
 }
 
-detection "nginx_response_time_anomaly_detected" {
-  title           = "Nginx Response Time Anomaly Detected"
-  description     = "Detect when response time anomalies were detected in Nginx logs to check for potential application degradation, infrastructure changes, or unusual traffic patterns affecting system performance."
+detection "response_time_anomaly_detected" {
+  title           = "Response Time Anomaly Detected"
+  description     = "Detect when response time anomalies were detected in logs to check for potential application degradation, infrastructure changes, or unusual traffic patterns affecting system performance."
   severity        = "high"
   display_columns = local.detection_display_columns
 
-  query = query.nginx_response_time_anomaly_detected
+  query = query.response_time_anomaly_detected
 
-  tags = merge(local.nginx_performance_common_tags, {
+  tags = merge(local.performance_common_tags, {
     mitre_attack_ids = "TA0040:T1499.003"
   })
 }
 
-query "nginx_response_time_anomaly_detected" {
+query "response_time_anomaly_detected" {
   sql = <<-EOQ
     with time_windows as (
       select
@@ -111,20 +111,20 @@ query "nginx_response_time_anomaly_detected" {
   EOQ
 }
 
-detection "nginx_upstream_latency_increased" {
-  title           = "Nginx Upstream Latency Increased"
-  description     = "Detect when upstream server latency was increased in Nginx logs to check for potential backend service issues, network congestion, or resource constraints affecting dependent systems."
+detection "upstream_latency_increased" {
+  title           = "Upstream Latency Increased"
+  description     = "Detect when upstream server latency was increased in logs to check for potential backend service issues, network congestion, or resource constraints affecting dependent systems."
   severity        = "medium"
   display_columns = local.detection_display_columns
 
-  query = query.nginx_upstream_latency_increased
+  query = query.upstream_latency_increased
 
-  tags = merge(local.nginx_performance_common_tags, {
+  tags = merge(local.performance_common_tags, {
     mitre_attack_ids = "TA0040:T1499.004"
   })
 }
 
-query "nginx_upstream_latency_increased" {
+query "upstream_latency_increased" {
   sql = <<-EOQ
     select
       upstream_addr as upstream,
@@ -144,20 +144,20 @@ query "nginx_upstream_latency_increased" {
   EOQ
 }
 
-detection "nginx_request_queue_size_increased" {
-  title           = "Nginx Request Queue Size Increased"
-  description     = "Detect when request queue size was increased in Nginx logs to check for potential capacity limitations, traffic spikes, or worker process bottlenecks affecting server responsiveness."
+detection "request_queue_size_increased" {
+  title           = "Request Queue Size Increased"
+  description     = "Detect when request queue size was increased in logs to check for potential capacity limitations, traffic spikes, or worker process bottlenecks affecting server responsiveness."
   severity        = "high"
   display_columns = local.detection_display_columns
 
-  query = query.nginx_request_queue_size_increased
+  query = query.request_queue_size_increased
 
-  tags = merge(local.nginx_performance_common_tags, {
+  tags = merge(local.performance_common_tags, {
     mitre_attack_ids = "TA0040:T1499.002"
   })
 }
 
-query "nginx_request_queue_size_increased" {
+query "request_queue_size_increased" {
   sql = <<-EOQ
     with queue_windows as (
       select
@@ -184,20 +184,20 @@ query "nginx_request_queue_size_increased" {
   EOQ
 }
 
-detection "nginx_memory_leak_detected" {
-  title           = "Nginx Memory Leak Detected"
-  description     = "Detect when potential memory leak was detected in Nginx logs to check for application resource mismanagement, memory corruption, or growing response sizes indicating data accumulation issues."
+detection "memory_leak_detected" {
+  title           = "Memory Leak Detected"
+  description     = "Detect when potential memory leak was detected in logs to check for application resource mismanagement, memory corruption, or growing response sizes indicating data accumulation issues."
   severity        = "critical"
   display_columns = local.detection_display_columns
 
-  query = query.nginx_memory_leak_detected
+  query = query.memory_leak_detected
 
-  tags = merge(local.nginx_performance_common_tags, {
+  tags = merge(local.performance_common_tags, {
     mitre_attack_ids = "TA0040:T1499.004"
   })
 }
 
-query "nginx_memory_leak_detected" {
+query "memory_leak_detected" {
   sql = <<-EOQ
     with response_trends as (
       select
@@ -232,20 +232,20 @@ query "nginx_memory_leak_detected" {
   EOQ
 }
 
-detection "nginx_connection_pool_exhausted" {
-  title           = "Nginx Connection Pool Exhausted"
-  description     = "Detect when connection pool was exhausted in Nginx logs to check for potential resource limits, connection leaks, or traffic surges exceeding server capacity."
+detection "connection_pool_exhausted" {
+  title           = "Connection Pool Exhausted"
+  description     = "Detect when connection pool was exhausted in logs to check for potential resource limits, connection leaks, or traffic surges exceeding server capacity."
   severity        = "critical"
   display_columns = local.detection_display_columns
 
-  query = query.nginx_connection_pool_exhausted
+  query = query.connection_pool_exhausted
 
-  tags = merge(local.nginx_performance_common_tags, {
+  tags = merge(local.performance_common_tags, {
     mitre_attack_ids = "TA0040:T1499.002"
   })
 }
 
-query "nginx_connection_pool_exhausted" {
+query "connection_pool_exhausted" {
   sql = <<-EOQ
     with connection_stats as (
       select
@@ -271,20 +271,20 @@ query "nginx_connection_pool_exhausted" {
   EOQ
 }
 
-detection "nginx_ddos_early_warning_detected" {
-  title           = "Nginx DDoS Early Warning Detected"
-  description     = "Detect when early signs of DDoS attack were detected in Nginx logs to check for potential coordinated attacks, traffic anomalies, or resource exhaustion attempts targeting the web server."
+detection "ddos_early_warning_detected" {
+  title           = "DDoS Early Warning Detected"
+  description     = "Detect when early signs of DDoS attack were detected in logs to check for potential coordinated attacks, traffic anomalies, or resource exhaustion attempts targeting the web server."
   severity        = "critical"
   display_columns = local.detection_display_columns
 
-  query = query.nginx_ddos_early_warning_detected
+  query = query.ddos_early_warning_detected
 
-  tags = merge(local.nginx_performance_common_tags, {
+  tags = merge(local.performance_common_tags, {
     mitre_attack_ids = "TA0040:T1498,TA0040:T1499.002"
   })
 }
 
-query "nginx_ddos_early_warning_detected" {
+query "ddos_early_warning_detected" {
   sql = <<-EOQ
     with traffic_patterns as (
       select

@@ -1,49 +1,53 @@
 locals {
-  nginx_security_common_tags = merge(local.nginx_access_log_detections_common_tags, {
+  security_common_tags = merge(local.access_log_common_tags, {
     category = "Security"
   })
 }
 
-benchmark "nginx_security_detections" {
-  title       = "Nginx Security Detections"
-  description = "This benchmark contains security-focused detections when scanning Nginx access logs."
+benchmark "security_detections" {
+  title       = "Security Detections"
+  description = "This benchmark contains security-focused detections when scanning access logs."
   type        = "detection"
   children = [
-    detection.nginx_sql_injection_attempted,
-    detection.nginx_directory_traversal_attempted,
-    detection.nginx_authentication_brute_forced,
-    detection.nginx_suspicious_user_agent_detected,
-    detection.nginx_xss_attempted,
-    detection.nginx_command_injection_attempted,
-    detection.nginx_sensitive_file_accessed,
-    detection.nginx_protocol_violated,
-    detection.nginx_rate_limit_exceeded,
-    detection.nginx_bot_activity_detected,
-    detection.nginx_api_key_exposed,
-    detection.nginx_zero_day_pattern_detected,
-    detection.nginx_unusual_region_accessed,
-    detection.nginx_session_cookie_theft_attempted
+    detection.api_key_exposed,
+    detection.authentication_brute_forced,
+    detection.bot_activity_detected,
+    detection.command_injection_attempted,
+    detection.data_privacy_requirements_violated,
+    detection.directory_traversal_attempted,
+    detection.pii_data_exposed,
+    detection.protocol_violated,
+    detection.rate_limit_exceeded,
+    detection.restricted_resource_accessed,
+    detection.sensitive_file_accessed,
+    detection.session_cookie_theft_attempted,
+    detection.sql_injection_attempted,
+    detection.suspicious_user_agent_detected,
+    detection.unauthorized_ip_accessed,
+    detection.unusual_region_accessed,
+    detection.xss_attempted,
+    detection.zero_day_pattern_detected,
   ]
 
-  tags = merge(local.nginx_security_common_tags, {
+  tags = merge(local.security_common_tags, {
     type = "Benchmark"
   })
 }
 
-detection "nginx_sql_injection_attempted" {
-  title           = "Nginx SQL Injection Attempted"
-  description     = "Detect when SQL injection was attempted in Nginx access logs to check for potential database compromise, unauthorized data access, or data manipulation risks."
+detection "sql_injection_attempted" {
+  title           = "SQL Injection Attempted"
+  description     = "Detect when SQL injection was attempted in access logs to check for potential database compromise, unauthorized data access, or data manipulation risks."
   severity        = "critical"
   display_columns = local.detection_display_columns
 
-  query = query.nginx_sql_injection_attempted
+  query = query.sql_injection_attempted
 
-  tags = merge(local.nginx_security_common_tags, {
+  tags = merge(local.security_common_tags, {
     mitre_attack_ids = "TA0001:T1190,TA0009:T1190"
   })
 }
 
-query "nginx_sql_injection_attempted" {
+query "sql_injection_attempted" {
   sql = <<-EOQ
     select
       remote_addr as request_ip,
@@ -67,20 +71,20 @@ query "nginx_sql_injection_attempted" {
   EOQ
 }
 
-detection "nginx_directory_traversal_attempted" {
-  title           = "Nginx Directory Traversal Attempted"
-  description     = "Detect when directory traversal was attempted in Nginx access logs to check for unauthorized file system access, sensitive data exposure, or server configuration leakage risks."
+detection "directory_traversal_attempted" {
+  title           = "Directory Traversal Attempted"
+  description     = "Detect when directory traversal was attempted in access logs to check for unauthorized file system access, sensitive data exposure, or server configuration leakage risks."
   severity        = "high"
   display_columns = local.detection_display_columns
 
-  query = query.nginx_directory_traversal_attempted
+  query = query.directory_traversal_attempted
 
-  tags = merge(local.nginx_security_common_tags, {
+  tags = merge(local.security_common_tags, {
     mitre_attack_ids = "TA0007:T1083,TA0009:T1083"
   })
 }
 
-query "nginx_directory_traversal_attempted" {
+query "directory_traversal_attempted" {
   sql = <<-EOQ
     select
       remote_addr as request_ip,
@@ -116,20 +120,20 @@ query "nginx_directory_traversal_attempted" {
   EOQ
 }
 
-detection "nginx_authentication_brute_forced" {
-  title           = "Nginx Authentication Brute Forced"
-  description     = "Detect when authentication was brute forced in Nginx access logs to check for credential compromise, unauthorized access, or account takeover risks."
+detection "authentication_brute_forced" {
+  title           = "Authentication Brute Forced"
+  description     = "Detect when authentication was brute forced in access logs to check for credential compromise, unauthorized access, or account takeover risks."
   severity        = "high"
   display_columns = local.detection_display_columns
 
-  query = query.nginx_authentication_brute_forced
+  query = query.authentication_brute_forced
 
-  tags = merge(local.nginx_security_common_tags, {
+  tags = merge(local.security_common_tags, {
     mitre_attack_ids = "TA0006:T1110.001,TA0006:T1110.003"
   })
 }
 
-query "nginx_authentication_brute_forced" {
+query "authentication_brute_forced" {
   sql = <<-EOQ
     with failed_auths as (
       select
@@ -156,20 +160,20 @@ query "nginx_authentication_brute_forced" {
   EOQ
 }
 
-detection "nginx_suspicious_user_agent_detected" {
+detection "suspicious_user_agent_detected" {
   title           = "Suspicious User Agent Detected"
   description     = "Detect requests from known malicious or suspicious user agents."
   severity        = "medium"
   display_columns = local.detection_display_columns
 
-  query = query.nginx_suspicious_user_agents
+  query = query.suspicious_user_agents
 
-  tags = merge(local.nginx_security_common_tags, {
+  tags = merge(local.security_common_tags, {
     mitre_attack_ids = "TA0043:T1592"
   })
 }
 
-query "nginx_suspicious_user_agents" {
+query "suspicious_user_agents" {
   sql = <<-EOQ
     select
       remote_addr as request_ip,
@@ -201,20 +205,20 @@ query "nginx_suspicious_user_agents" {
   EOQ
 }
 
-detection "nginx_xss_attempted" {
+detection "xss_attempted" {
   title           = "Cross-Site Scripting (XSS) Attempted"
   description     = "Detect potential XSS attacks in request parameters and paths."
   severity        = "critical"
   display_columns = local.detection_display_columns
 
-  query = query.nginx_xss_attempts
+  query = query.xss_attempts
 
-  tags = merge(local.nginx_security_common_tags, {
+  tags = merge(local.security_common_tags, {
     mitre_attack_ids = "TA0009:T1059.007"
   })
 }
 
-query "nginx_xss_attempts" {
+query "xss_attempts" {
   sql = <<-EOQ
     select
       remote_addr as request_ip,
@@ -260,20 +264,20 @@ query "nginx_xss_attempts" {
   EOQ
 }
 
-detection "nginx_command_injection_attempted" {
+detection "command_injection_attempted" {
   title           = "Command Injection Attempted"
   description     = "Detect potential command injection attempts in request parameters."
   severity        = "critical"
   display_columns = local.detection_display_columns
 
-  query = query.nginx_command_injection_attempted
+  query = query.command_injection_attempted
 
-  tags = merge(local.nginx_security_common_tags, {
+  tags = merge(local.security_common_tags, {
     mitre_attack_ids = "TA0009:T1059"
   })
 }
 
-query "nginx_command_injection_attempted" {
+query "command_injection_attempted" {
   sql = <<-EOQ
     select
       remote_addr as request_ip,
@@ -305,20 +309,20 @@ query "nginx_command_injection_attempted" {
   EOQ
 }
 
-detection "nginx_sensitive_file_accessed" {
+detection "sensitive_file_accessed" {
   title           = "Sensitive File Access Attempted"
   description     = "Detect attempts to access sensitive configuration or system files."
   severity        = "high"
   display_columns = local.detection_display_columns
 
-  query = query.nginx_sensitive_file_accessed
+  query = query.sensitive_file_accessed
 
-  tags = merge(local.nginx_security_common_tags, {
+  tags = merge(local.security_common_tags, {
     mitre_attack_ids = "TA0009:T1083"
   })
 }
 
-query "nginx_sensitive_file_accessed" {
+query "sensitive_file_accessed" {
   sql = <<-EOQ
     select
       remote_addr as request_ip,
@@ -347,20 +351,20 @@ query "nginx_sensitive_file_accessed" {
   EOQ
 }
 
-detection "nginx_protocol_violated" {
+detection "protocol_violated" {
   title           = "HTTP Protocol Violations"
   description     = "Detect malformed requests and protocol violations that may indicate malicious activity."
   severity        = "medium"
   display_columns = local.detection_display_columns
 
-  query = query.nginx_protocol_violated
+  query = query.protocol_violated
 
-  tags = merge(local.nginx_security_common_tags, {
+  tags = merge(local.security_common_tags, {
     mitre_attack_ids = "TA0005:T1211,TA0040:T1499.004"
   })
 }
 
-query "nginx_protocol_violated" {
+query "protocol_violated" {
   sql = <<-EOQ
     select
       remote_addr as request_ip,
@@ -380,20 +384,20 @@ query "nginx_protocol_violated" {
   EOQ
 }
 
-detection "nginx_rate_limit_exceeded" {
+detection "rate_limit_exceeded" {
   title           = "Rate Limit Exceeded"
   description     = "Detect IPs exceeding request rate limits, which may indicate DoS attempts or aggressive scanning."
   severity        = "high"
   display_columns = local.detection_display_columns
 
-  query = query.nginx_rate_limit_exceeded
+  query = query.rate_limit_exceeded
 
-  tags = merge(local.nginx_security_common_tags, {
+  tags = merge(local.security_common_tags, {
     mitre_attack_ids = "TA0040:T1499.002"
   })
 }
 
-query "nginx_rate_limit_exceeded" {
+query "rate_limit_exceeded" {
   sql = <<-EOQ
     with rate_windows as (
       select
@@ -419,20 +423,20 @@ query "nginx_rate_limit_exceeded" {
   EOQ
 }
 
-detection "nginx_bot_activity_detected" {
+detection "bot_activity_detected" {
   title           = "Automated Bot Activity Detected"
   description     = "Detect patterns of automated bot activity based on request patterns and user agents."
   severity        = "medium"
   display_columns = local.detection_display_columns
 
-  query = query.nginx_bot_activity_detected
+  query = query.bot_activity_detected
 
-  tags = merge(local.nginx_security_common_tags, {
+  tags = merge(local.security_common_tags, {
     mitre_attack_ids = "TA0043:T1595.002,TA0043:T1592.002"
   })
 }
 
-query "nginx_bot_activity_detected" {
+query "bot_activity_detected" {
   sql = <<-EOQ
     with bot_activity as (
       select
@@ -469,20 +473,20 @@ query "nginx_bot_activity_detected" {
   EOQ
 }
 
-detection "nginx_api_key_exposed" {
+detection "api_key_exposed" {
   title           = "API Key or Token Exposure"
   description     = "Detect potential exposure of API keys or tokens in URLs"
   severity        = "critical"
   display_columns = local.detection_display_columns
 
-  query = query.nginx_api_key_exposed
+  query = query.api_key_exposed
 
-  tags = merge(local.nginx_security_common_tags, {
+  tags = merge(local.security_common_tags, {
     mitre_attack_ids = "TA0006:T1552"
   })
 }
 
-query "nginx_api_key_exposed" {
+query "api_key_exposed" {
   sql = <<-EOQ
     select
       remote_addr as request_ip,
@@ -504,20 +508,20 @@ query "nginx_api_key_exposed" {
   EOQ
 }
 
-detection "nginx_zero_day_pattern_detected" {
+detection "zero_day_pattern_detected" {
   title           = "Potential Zero-Day Attack Pattern Detected"
   description     = "Detect unusual patterns that might indicate zero-day exploitation attempts"
   severity        = "critical"
   display_columns = local.detection_display_columns
 
-  query = query.nginx_zero_day_attack_patterns
+  query = query.zero_day_attack_patterns
 
-  tags = merge(local.nginx_security_common_tags, {
+  tags = merge(local.security_common_tags, {
     mitre_attack_ids = "TA0007:T1190"
   })
 }
 
-query "nginx_zero_day_attack_patterns" {
+query "zero_day_attack_patterns" {
   sql = <<-EOQ
     with unusual_patterns as (
       select
@@ -556,20 +560,20 @@ query "nginx_zero_day_attack_patterns" {
   EOQ
 }
 
-detection "nginx_unusual_region_accessed" {
+detection "unusual_region_accessed" {
   title           = "Access from Unusual Cloud Regions"
   description     = "Detect access attempts from unusual or unauthorized cloud regions based on IP geolocation."
   severity        = "high"
   display_columns = local.detection_display_columns
 
-  query = query.nginx_unusual_region_accessed
+  query = query.unusual_region_accessed
 
-  tags = merge(local.nginx_security_common_tags, {
+  tags = merge(local.security_common_tags, {
     mitre_attack_ids = "TA0005:T1535"
   })
 }
 
-query "nginx_unusual_region_accessed" {
+query "unusual_region_accessed" {
   sql = <<-EOQ
     with ip_activity as (
       select
@@ -599,20 +603,20 @@ query "nginx_unusual_region_accessed" {
   EOQ
 }
 
-detection "nginx_session_cookie_theft_attempted" {
+detection "session_cookie_theft_attempted" {
   title           = "Session Cookie Theft Attempted"
   description     = "Detect potential attempts to steal or manipulate web session cookies."
   severity        = "critical"
   display_columns = local.detection_display_columns
 
-  query = query.nginx_session_cookie_theft_attempted
+  query = query.session_cookie_theft_attempted
 
-  tags = merge(local.nginx_security_common_tags, {
+  tags = merge(local.security_common_tags, {
     mitre_attack_ids = "TA0005:T1550.004"
   })
 }
 
-query "nginx_session_cookie_theft_attempted" {
+query "session_cookie_theft_attempted" {
   sql = <<-EOQ
     select
       remote_addr as request_ip,
@@ -640,3 +644,175 @@ query "nginx_session_cookie_theft_attempted" {
       tp_timestamp desc;
   EOQ
 }
+
+detection "pii_data_exposed" {
+  title           = "PII Data Exposed"
+  description     = "Detect when personally identifiable information (PII) was exposed in URLs to check for potential data privacy violations, regulatory non-compliance, or sensitive information leakage risks."
+  severity        = "critical"
+  display_columns = local.detection_display_columns
+
+  query = query.pii_data_exposed
+
+  tags = merge(local.compliance_common_tags, {
+    mitre_attack_ids = "TA0009:T1213"
+  })
+}
+
+query "pii_data_exposed" {
+  sql = <<-EOQ
+    with pii_patterns as (
+      select request_uri as request_path,
+        remote_addr as request_ip,
+        status as status_code,
+        tp_timestamp as timestamp,
+        case
+          when request_uri ~ '[0-9]{3}-[0-9]{2}-[0-9]{4}' then 'SSN'
+          when request_uri ~ '[0-9]{16}' then 'Credit Card'
+          when request_uri ~ '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}' then 'Email'
+          when request_uri ~ '(?:password|passwd|pwd)=[^&]+' then 'Password'
+          when request_uri ~ '[0-9]{10}' then 'Phone Number'
+        end as pii_type
+      from
+        nginx_access_log
+      where
+        request_uri ~ '[0-9]{3}-[0-9]{2}-[0-9]{4}'  -- SSN pattern
+        or request_uri ~ '[0-9]{16}'  -- Credit card pattern
+        or request_uri ~ '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}'  -- Email pattern
+        or request_uri ~ '(?:password|passwd|pwd)=[^&]+'  -- Password in URL
+        or request_uri ~ '[0-9]{10}'  -- Phone number pattern
+    )
+    select
+      *
+    from
+      pii_patterns
+    order by
+      timestamp desc;
+  EOQ
+}
+
+detection "restricted_resource_accessed" {
+  title           = "Restricted Resource Accessed"
+  description     = "Detect when restricted resources or administrative areas were accessed in logs to check for potential unauthorized access, privilege escalation, or inadequate access control risks."
+  severity        = "high"
+  display_columns = local.detection_display_columns
+
+  query = query.restricted_resource_accessed
+
+  tags = merge(local.compliance_common_tags, {
+    mitre_attack_ids = "TA0007:T1083,TA0001:T1190"
+  })
+}
+
+query "restricted_resource_accessed" {
+  sql = <<-EOQ
+    select
+      remote_addr as request_ip,
+      request_uri as request_path,
+      request_method,
+      status as status_code,
+      tp_timestamp as timestamp
+    from
+      nginx_access_log
+    where
+      (
+        lower(request_uri) like '%/admin%'
+        or lower(request_uri) like '%/manager%'
+        or lower(request_uri) like '%/console%'
+        or lower(request_uri) like '%/dashboard%'
+        or lower(request_uri) like '%/management%'
+        or lower(request_uri) like '%/phpmyadmin%'
+        or lower(request_uri) like '%/wp-admin%'
+        or lower(request_uri) like '%/administrator%'
+      )
+      and status != 404  -- Exclude 404s to reduce noise
+    order by
+      timestamp desc;
+  EOQ
+}
+
+detection "unauthorized_ip_accessed" {
+  title           = "Unauthorized IP Accessed"
+  description     = "Detect when access from unauthorized IP ranges or geographic locations was detected in logs to check for potential network-level access control bypasses, geofencing violations, or unauthorized resource access risks."
+  severity        = "high"
+  display_columns = local.detection_display_columns
+
+  query = query.unauthorized_ip_accessed
+
+  tags = merge(local.compliance_common_tags, {
+    mitre_attack_ids = "TA0005:T1535"
+  })
+}
+
+query "unauthorized_ip_accessed" {
+  sql = <<-EOQ
+    with unauthorized_access as (
+      select
+        remote_addr as request_ip,
+        count(*) as request_count,
+        min(tp_timestamp) as first_access,
+        max(tp_timestamp) as last_access
+      from
+        nginx_access_log
+      where
+        remote_addr not like '10.%'
+        and remote_addr not like '172.%'
+        and remote_addr not like '192.168.%'
+      group by
+        remote_addr
+    )
+    select
+      *
+    from
+      unauthorized_access
+    order by
+      request_count desc;
+  EOQ
+}
+
+detection "data_privacy_requirements_violated" {
+  title           = "Data Privacy Requirements Violated"
+  description     = "Detect when data privacy requirements were violated in logs to check for potential regulatory non-compliance, inadequate data protection controls, or sensitive information handling risks."
+  severity        = "high"
+  display_columns = local.detection_display_columns
+
+  query = query.data_privacy_requirements_violated
+
+  tags = merge(local.compliance_common_tags, {
+    mitre_attack_ids = "TA0009:T1213,TA0043:T1592"
+  })
+}
+
+query "data_privacy_requirements_violated" {
+  sql = <<-EOQ
+    with privacy_endpoints as (
+      select
+        request_uri as endpoint,
+        count(*) as total_requests,
+        count(*) filter (
+          where request_uri ~ '(?i)(ssn|email|password|credit|card|phone|address|dob|birth)'
+        ) as sensitive_data_count,
+        count(distinct remote_addr) as unique_ips
+      from
+        nginx_access_log
+      where
+        -- Focus on API endpoints and form submissions
+        (request_uri like '/api/%' or request_method = 'POST')
+      group by
+        request_uri
+      having
+        count(*) filter (
+          where request_uri ~ '(?i)(ssn|email|password|credit|card|phone|address|dob|birth)'
+        ) > 0
+    )
+    select
+      endpoint,
+      total_requests,
+      sensitive_data_count,
+      unique_ips,
+      round((sensitive_data_count::float / total_requests * 100)::numeric, 2) as sensitive_data_percentage
+    from
+      privacy_endpoints
+    order by
+      sensitive_data_count desc;
+  EOQ
+} 

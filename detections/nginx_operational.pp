@@ -1,39 +1,39 @@
 locals {
-  nginx_operational_common_tags = merge(local.nginx_access_log_detections_common_tags, {
+  operational_common_tags = merge(local.access_log_common_tags, {
     category = "Operational"
   })
 }
 
-benchmark "nginx_operational_detections" {
-  title       = "Nginx Operational Detections"
-  description = "This benchmark contains operational detections when scanning Nginx access logs."
+benchmark "operational_detections" {
+  title       = "Operational Detections"
+  description = "This benchmark contains operational detections when scanning access logs."
   type        = "detection"
   children = [
-    detection.nginx_error_rate_increased,
-    detection.nginx_traffic_spike_detected,
-    detection.nginx_bandwidth_usage_exceeded,
-    detection.nginx_endpoint_error_rate_increased
+    detection.error_rate_increased,
+    detection.traffic_spike_detected,
+    detection.bandwidth_usage_exceeded,
+    detection.endpoint_error_rate_increased
   ]
 
-  tags = merge(local.nginx_operational_common_tags, {
+  tags = merge(local.operational_common_tags, {
     type = "Benchmark"
   })
 }
 
-detection "nginx_error_rate_increased" {
-  title           = "Nginx Error Rate Increased"
-  description     = "Detect when error rate was increased in Nginx logs to check for potential system instability, service unavailability, or application failures that could impact user experience."
+detection "error_rate_increased" {
+  title           = "Error Rate Increased"
+  description     = "Detect when error rate was increased in logs to check for potential system instability, service unavailability, or application failures that could impact user experience."
   severity        = "high"
   display_columns = local.detection_display_columns
 
-  query = query.nginx_error_rate_increased
+  query = query.error_rate_increased
 
-  tags = merge(local.nginx_operational_common_tags, {
+  tags = merge(local.operational_common_tags, {
     mitre_attack_ids = "TA0040:T1499.004"
   })
 }
 
-query "nginx_error_rate_increased" {
+query "error_rate_increased" {
   sql = <<-EOQ
     with error_windows as (
       select
@@ -59,20 +59,20 @@ query "nginx_error_rate_increased" {
   EOQ
 }
 
-detection "nginx_traffic_spike_detected" {
-  title           = "Nginx Traffic Spike Detected"
-  description     = "Detect when unusual traffic spikes were detected in Nginx logs to check for potential denial of service attacks, viral content, or unexpected user behavior patterns."
+detection "traffic_spike_detected" {
+  title           = "Traffic Spike Detected"
+  description     = "Detect when unusual traffic spikes were detected in logs to check for potential denial of service attacks, viral content, or unexpected user behavior patterns."
   severity        = "medium"
   display_columns = local.detection_display_columns
 
-  query = query.nginx_traffic_spike_detected
+  query = query.traffic_spike_detected
 
-  tags = merge(local.nginx_operational_common_tags, {
+  tags = merge(local.operational_common_tags, {
     mitre_attack_ids = "TA0040:T1498"
   })
 }
 
-query "nginx_traffic_spike_detected" {
+query "traffic_spike_detected" {
   sql = <<-EOQ
     with traffic_windows as (
       select
@@ -104,20 +104,20 @@ query "nginx_traffic_spike_detected" {
   EOQ
 }
 
-detection "nginx_bandwidth_usage_exceeded" {
-  title           = "Nginx Bandwidth Usage Exceeded"
-  description     = "Detect when bandwidth usage was exceeded in Nginx logs to check for potential cost overruns, infrastructure capacity issues, or malicious data exfiltration activities."
+detection "bandwidth_usage_exceeded" {
+  title           = "Bandwidth Usage Exceeded"
+  description     = "Detect when bandwidth usage was exceeded in logs to check for potential cost overruns, infrastructure capacity issues, or malicious data exfiltration activities."
   severity        = "medium"
   display_columns = local.detection_display_columns
 
-  query = query.nginx_bandwidth_usage_exceeded
+  query = query.bandwidth_usage_exceeded
 
-  tags = merge(local.nginx_operational_common_tags, {
+  tags = merge(local.operational_common_tags, {
     mitre_attack_ids = "TA0040:T1496.002"
   })
 }
 
-query "nginx_bandwidth_usage_exceeded" {
+query "bandwidth_usage_exceeded" {
   sql = <<-EOQ
     select
       remote_addr as request_ip,
@@ -138,20 +138,20 @@ query "nginx_bandwidth_usage_exceeded" {
   EOQ
 }
 
-detection "nginx_endpoint_error_rate_increased" {
-  title           = "Nginx Endpoint Error Rate Increased"
-  description     = "Detect when endpoint error rate was increased in Nginx logs to check for specific application failures, problematic API endpoints, or targeted attack patterns affecting particular resources."
+detection "endpoint_error_rate_increased" {
+  title           = "Endpoint Error Rate Increased"
+  description     = "Detect when endpoint error rate was increased in logs to check for specific application failures, problematic API endpoints, or targeted attack patterns affecting particular resources."
   severity        = "high"
   display_columns = local.detection_display_columns
 
-  query = query.nginx_endpoint_error_rate_increased
+  query = query.endpoint_error_rate_increased
 
-  tags = merge(local.nginx_operational_common_tags, {
+  tags = merge(local.operational_common_tags, {
     mitre_attack_ids = "TA0040:T1499.004"
   })
 }
 
-query "nginx_endpoint_error_rate_increased" {
+query "endpoint_error_rate_increased" {
   sql = <<-EOQ
     select
       request_uri as endpoint,
