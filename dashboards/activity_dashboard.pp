@@ -1,10 +1,10 @@
 dashboard "activity_dashboard" {
-  title         = "Nginx Log Activity Dashboard"
+  title         = "Access Log Activity Dashboard"
   documentation = file("./dashboards/docs/activity_dashboard.md")
 
   tags = {
     type    = "Dashboard"
-    service = "Nginx"
+    service = "Nginx/AccessLog"
   }
 
   container {
@@ -35,21 +35,21 @@ dashboard "activity_dashboard" {
 
   container {
     chart {
-      title = "Status Code Distribution"
+      title = "Requests by Status Code"
       query = query.activity_dashboard_status_distribution
       width = 6
       type  = "pie"
     }
 
     chart {
-      title = "HTTP Method Distribution"
+      title = "Requests by HTTP Method"
       query = query.activity_dashboard_method_distribution
       width = 6
       type  = "column"
     }
 
     chart {
-      title = "Requests per Day"
+      title = "Requests by Day"
       query = query.activity_dashboard_requests_per_day
       width = 6
       type  = "line"
@@ -210,7 +210,7 @@ query "activity_dashboard_top_10_urls" {
 }
 
 query "activity_dashboard_requests_per_day" {
-  title       = "Requests per Day"
+  title       = "Requests by Day"
   description = "Count of requests grouped by day."
 
   sql = <<-EOQ
@@ -231,7 +231,7 @@ query "activity_dashboard_requests_per_day" {
 }
 
 query "activity_dashboard_status_distribution" {
-  title       = "Status Code Distribution"
+  title       = "Requests by Status Code"
   description = "Distribution of HTTP status codes by category."
 
   sql = <<-EOQ
@@ -264,7 +264,7 @@ query "activity_dashboard_status_distribution" {
 }
 
 query "activity_dashboard_method_distribution" {
-  title       = "HTTP Method Distribution"
+  title       = "Requests by HTTP Method"
   description = "Distribution of HTTP methods used in requests."
 
   sql = <<-EOQ
