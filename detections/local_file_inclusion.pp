@@ -43,7 +43,7 @@ query "path_traversal" {
     select
       ${local.detection_sql_columns}
     from
-      apache_access_log
+      nginx_access_log
     where
       request_uri is not null
       and (
@@ -251,7 +251,7 @@ query "hidden_file_access" {
     select
       ${local.detection_sql_columns}
     from
-      apache_access_log
+      nginx_access_log
     where
       request_uri is not null
       and (
