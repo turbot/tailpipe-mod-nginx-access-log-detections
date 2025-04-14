@@ -1,14 +1,15 @@
 benchmark "access_log_detections" {
   title       = "Access Log Detections"
-  description = "This benchmark contains detections for security, operational, performance, and compliance issues when analyzing access logs."
+  description = "This benchmark contains recommendations when scanning Nginx access logs."
   type        = "detection"
   children = [
-    benchmark.security_detections,
-    benchmark.operational_detections,
-    benchmark.performance_detections,
+    benchmark.cross_site_scripting_detections,
+    benchmark.local_file_inclusion_detections,
+    benchmark.remote_command_execution_detections,
+    benchmark.sql_injection_detections,
   ]
 
   tags = merge(local.nginx_access_log_detections_common_tags, {
     type = "Benchmark"
   })
-}
+} 
