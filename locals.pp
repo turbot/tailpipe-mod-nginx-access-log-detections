@@ -35,5 +35,6 @@ locals {
     "actor",
     "source_ip",
     "source_id",
+    "status_src",
   ]
 }

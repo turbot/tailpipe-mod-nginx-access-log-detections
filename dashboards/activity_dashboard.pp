@@ -320,25 +320,13 @@ query "activity_dashboard_requests_by_user_agent" {
 
   sql = <<-EOQ
     select
-      case
-        when http_user_agent is null then 'Unknown'
-        when http_user_agent like '%Chrome%' then 'Chrome'
-        when http_user_agent like '%Firefox%' then 'Firefox'
-        when http_user_agent like '%Safari%' and http_user_agent not like '%Chrome%' then 'Safari'
-        when http_user_agent like '%MSIE%' or http_user_agent like '%Trident%' then 'Internet Explorer'
-        when http_user_agent like '%Edge%' then 'Edge'
-        when http_user_agent like '%bot%' or http_user_agent like '%crawler%' then 'Bot/Crawler'
-        when http_user_agent like '%curl%' then 'Curl'
-        when http_user_agent like '%wget%' then 'Wget'
-        when http_user_agent like '%PostmanRuntime%' then 'Postman'
-        else 'Other'
-      end as "User Agent",
+      http_user_agent as "User Agent",
       count(*) as "Request Count"
     from
       nginx_access_log
     where
       http_user_agent is not null
     group by
-      "User Agent";
+      http_user_agent;
   EOQ
 }
