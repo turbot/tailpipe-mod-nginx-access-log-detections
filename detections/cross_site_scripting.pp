@@ -188,6 +188,8 @@ query "cross_site_scripting_encoding" {
           -- URL encoding
           or request_uri ilike '%\\u00%'
           or request_uri ilike '%\\x%'
+          -- UTF-7 encoding (IE specific)
+          or request_uri ilike '%+ADw-%'
         )
       )
       or
@@ -204,6 +206,8 @@ query "cross_site_scripting_encoding" {
           -- URL encoding
           or http_user_agent ilike '%\\u00%'
           or http_user_agent ilike '%\\x%'
+          -- UTF-7 encoding (IE specific)
+          or http_user_agent ilike '%+ADw-%'
         )
       )
     order by
