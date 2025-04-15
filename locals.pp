@@ -20,9 +20,8 @@ locals {
   tp_id as source_id,
   -- Create new aliases to preserve original row data
   status as status_src,
-  timestamp as timestamp_src,
   *
-  exclude (status, timestamp)
+  exclude (status)
   EOQ
 }
 
