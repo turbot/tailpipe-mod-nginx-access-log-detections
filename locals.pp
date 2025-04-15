@@ -32,9 +32,9 @@ locals {
     "timestamp",
     "operation",
     "resource",
+    "status",
     "actor",
     "source_ip",
     "source_id",
-    "status_src",
   ]
 }
