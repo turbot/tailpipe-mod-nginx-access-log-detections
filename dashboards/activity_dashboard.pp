@@ -44,7 +44,7 @@ dashboard "activity_dashboard" {
       title = "Requests by Day"
       query = query.activity_dashboard_requests_by_day
       width = 6
-      type  = "heatmap"
+      type  = "line"
     }
 
     chart {
@@ -339,6 +339,6 @@ query "activity_dashboard_requests_by_user_agent" {
     where
       http_user_agent is not null
     group by
-      http_user_agent;
+      "User Agent";
   EOQ
 }
