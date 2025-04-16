@@ -11,6 +11,6 @@ mod "nginx_access_log_detections" {
   opengraph {
     title       = "Tailpipe Mod for Nginx Access Log Detections"
     description = "Search your Nginx access logs for high risk actions using Tailpipe."
-    #image       = "/images/mods/turbot/nginx-social-graphic.png"
+    image       = "/images/mods/turbot/nginx-access-log-detections-social-graphic.png"
   }
 }

@@ -1,0 +1,14 @@
+## Overview
+
+Detect attempts to access hidden files and directories, including version control repositories, configuration files, and other sensitive resources not intended for public access. These files often contain sensitive information that can be exploited for further attacks.
+
+Attackers target hidden files and directories that may contain sensitive information such as version control repositories (`.git`, `.svn`) which can expose source code and commit history, configuration files (`.env`, `.htaccess`, `.htpasswd`) which may contain credentials and security settings, hidden system files (`.DS_Store`, `.bash_history`) which can reveal system information, development environment files (`.vscode`, `.idea`) which may contain project secrets, and infrastructure configuration files (`docker-compose.yml`, `Dockerfile`, `kubeconfig`) which reveal architecture details. These files are often unintentionally exposed due to misconfiguration or oversight during deployment.
+
+When this detection triggers, security teams should verify whether the access attempt was successful, review which hidden files were targeted and what sensitive information they may contain, remove or properly secure access to hidden files and directories, configure web servers to block access to hidden files, implement proper `.gitignore` files and deployment processes to prevent exposure, check for credentials or secrets that may have been exposed and rotate them, and consider implementing Git hooks to prevent committing sensitive files. Some legitimate scenarios may trigger this detection, including version control integrations that legitimately access repository files, development tools that check for configuration files, content management systems with special handling for hidden files, and administrative tools that manage server configuration files.
+
+**References**:
+- [OWASP: Reviewing Code for Version Control Systems Leakage](https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/04-Review_Old_Backup_and_Unreferenced_Files_for_Sensitive_Information)
+- [CWE-527: Exposure of Version-Control Repository to an Unauthorized Control Sphere](https://cwe.mitre.org/data/definitions/527.html)
+- [Git-Secrets: Preventing sensitive information from being committed](https://github.com/awslabs/git-secrets)
+- [OWASP File Upload Security Guide](https://owasp.org/www-community/vulnerabilities/Unrestricted_File_Upload)
+- [MITRE ATT&CK: File and Directory Discovery (T1083)](https://attack.mitre.org/techniques/T1083/) 

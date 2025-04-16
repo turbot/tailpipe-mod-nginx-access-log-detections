@@ -1,0 +1,13 @@
+## Overview
+
+Detect when a web server received requests with path traversal patterns like '../'. This detection focuses on identifying attempts to navigate outside the intended web directory structure using directory traversal sequences, which is a common technique used in Local File Inclusion (LFI) attacks.
+
+Path traversal (also known as directory traversal) attacks use patterns such as `../` (or variations like `./`, `..\\`, `\\.\\`) to navigate up the directory tree and access files outside the web root or application's intended directory structure. By manipulating variables that reference files with "dot-dot-slash" sequences, attackers can access arbitrary files and directories stored on the file system, including application source code, configuration files, and critical system files. The most basic form uses `../` sequences, while more sophisticated attacks may use encoded versions or additional techniques to bypass security controls.
+
+When this detection triggers, security teams should verify if the attack was successful by checking log entries for 200 OK responses versus 404/403 errors, review which files the attacker attempted to access, implement server-side input validation that rejects or sanitizes path traversal sequences, configure the web server to restrict access to only the required directories, use a Web Application Firewall (WAF) with rules to block path traversal attacks, patch and update web applications to address potential LFI vulnerabilities, and implement proper file access controls based on the principle of least privilege. Some legitimate scenarios may trigger this detection, including certain content management systems with specific URL structures, development frameworks that use path-like parameters, applications that implement file browsers or explorers with navigation capabilities, and applications that legitimately need to reference parent directories.
+
+**References**:
+- [OWASP Path Traversal](https://owasp.org/www-community/attacks/Path_Traversal)
+- [CWE-22: Improper Limitation of a Pathname to a Restricted Directory](https://cwe.mitre.org/data/definitions/22.html)
+- [OWASP: Testing for Path Traversal](https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/05-Authorization_Testing/01-Testing_Directory_Traversal_File_Include)
+- [MITRE ATT&CK: File and Directory Discovery (T1083)](https://attack.mitre.org/techniques/T1083/) 

@@ -1,10 +1,14 @@
 # Nginx Access Log Detections Mod for Powerpipe
 
-View dashboards, run detections and scan for anomalies across your Nginx access logs.
+[Tailpipe](https://tailpipe.io) is an open-source CLI tool that allows you to collect logs and query them with SQL.
 
-<!-- 
-TODO: Insert images
--->
+The [Nginx Access Log Detections Mod](https://hub.powerpipe.io/mods/turbot/tailpipe-mod-nginx-access-log-detections) contains pre-built dashboards and detections, which can be used to monitor and analyze activity across your Nginx servers.
+
+Run detection benchmarks:
+![image](docs/images/nginx_access_log_owasp_dashboard.png)
+
+View insights in dashboards:
+![image](docs/images/nginx_access_log_activity_dashboard.png)
 
 ## Documentation
 
@@ -102,13 +106,12 @@ List available benchmarks:
 powerpipe benchmark list
 ```
 
-<!-- TODO: add a benchmark name and uncomment
 Run a benchmark:
 
 ```sh
-powerpipe benchmark run nginx_access_log_detections.benchmark.
+powerpipe benchmark run nginx_access_log_detections.benchmark.access_log_detections
 ```
--->
+
 Different output formats are also available, for more information please see
 [Output Formats](https://powerpipe.io/docs/reference/cli/benchmark#output-formats).
 
@@ -126,4 +129,4 @@ Want to help but don't know where to start? Pick up one of the `help wanted` iss
 
 - [Powerpipe](https://github.com/turbot/powerpipe/labels/help%20wanted)
 - [Tailpipe](https://github.com/turbot/tailpipe/labels/help%20wanted)
-- [Nginx Access Log Detections Mod](https://github.com/turbot/tailpipe-mod-nginx0-access-log-detections/labels/help%20wanted)
+- [Nginx Access Log Detections Mod](https://github.com/turbot/tailpipe-mod-nginx-access-log-detections/labels/help%20wanted)
