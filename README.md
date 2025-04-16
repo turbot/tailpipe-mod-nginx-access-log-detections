@@ -5,7 +5,7 @@
 The [Nginx Access Log Detections Mod](https://hub.powerpipe.io/mods/turbot/tailpipe-mod-nginx-access-log-detections) contains pre-built dashboards and detections, which can be used to monitor and analyze activity across your Nginx servers.
 
 Run detection benchmarks:
-![image](docs/images/nginx_access_log_detection_dashboard.png)
+![image](docs/images/nginx_access_log_owasp_dashboard.png)
 
 View insights in dashboards:
 ![image](docs/images/nginx_access_log_activity_dashboard.png)
