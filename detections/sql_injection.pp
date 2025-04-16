@@ -111,8 +111,8 @@ query "sql_injection_union_based" {
 }
 
 detection "sql_injection_blind_based" {
-  title           = "Blind SQL Injection"
-  description     = "Detect blind SQL injection attacks that attempt to extract information without visible error messages."
+  title           = "SQL Injection Blind Based"
+  description     = "Detect blind SQL injection attacks that attempt to extract information from the database using boolean conditions or time delays."
   documentation   = file("./detections/docs/sql_injection_blind_based.md")
   severity        = "critical"
   display_columns = local.detection_display_columns
@@ -158,7 +158,7 @@ query "sql_injection_blind_based" {
 }
 
 detection "sql_injection_error_based" {
-  title           = "Error-based SQL Injection"
+  title           = "SQL Injection Error Based"
   description     = "Detect error-based SQL injection attacks that attempt to extract information through database error messages."
   documentation   = file("./detections/docs/sql_injection_error_based.md")
   severity        = "critical"
@@ -200,7 +200,7 @@ query "sql_injection_error_based" {
         -- Common error triggers
         or request_uri ilike '%having%1=1%'
         or request_uri ilike '%order%by%'
-        or request_uri ilike '%group%by%
+        or request_uri ilike '%group%by%'
       )
     order by
       tp_timestamp desc;
@@ -208,8 +208,8 @@ query "sql_injection_error_based" {
 }
 
 detection "sql_injection_time_based" {
-  title           = "Time-based SQL Injection"
-  description     = "Detect time-based SQL injection attacks that attempt to extract information through timing delays."
+  title           = "SQL Injection Time Based"
+  description     = "Detect time-based SQL injection attacks that attempt to extract information by causing delays in database response times."
   documentation   = file("./detections/docs/sql_injection_time_based.md")
   severity        = "critical"
   display_columns = local.detection_display_columns
@@ -245,8 +245,8 @@ query "sql_injection_time_based" {
 }
 
 detection "sql_injection_user_agent_based" {
-  title           = "User-Agent SQL Injection"
-  description     = "Detect SQL injection attacks through User-Agent header manipulation."
+  title           = "SQL Injection User Agent Based"
+  description     = "Detect SQL injection attacks that use the User-Agent header rather than URL parameters to bypass WAF protections or input filtering."
   documentation   = file("./detections/docs/sql_injection_user_agent_based.md")
   severity        = "critical"
   display_columns = local.detection_display_columns

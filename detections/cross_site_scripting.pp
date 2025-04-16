@@ -6,7 +6,7 @@ locals {
 
 benchmark "cross_site_scripting_detections" {
   title       = "Cross-Site Scripting (XSS) Detections"
-  description = "This benchmark contains XSS focused detections when scanning Nginx access logs."
+  description = "This benchmark contains cross-site scripting (XSS) focused detections when scanning access logs."
   type        = "detection"
   children = [
     detection.cross_site_scripting_angular_template,
@@ -26,8 +26,8 @@ benchmark "cross_site_scripting_detections" {
 }
 
 detection "cross_site_scripting_angular_template" {
-  title           = "Angular Template XSS"
-  description     = "Detect Angular template injection attacks that can lead to XSS vulnerabilities."
+  title           = "Cross-Site Scripting AngularJS Template"
+  description     = "Detect potential AngularJS template injection attacks that can lead to Cross-Site Scripting in requests and User-Agent headers."
   documentation   = file("./detections/docs/cross_site_scripting_angular_template.md")
   severity        = "high"
   display_columns = local.detection_display_columns
@@ -35,7 +35,7 @@ detection "cross_site_scripting_angular_template" {
   query = query.cross_site_scripting_angular_template
 
   tags = merge(local.cross_site_scripting_common_tags, {
-    mitre_attack_ids = "TA0001:T1059.007",
+    mitre_attack_ids = "TA0002:T1059.007",
     owasp_top_10     = "A03:2021-Injection"
   })
 }
@@ -76,8 +76,8 @@ query "cross_site_scripting_angular_template" {
 }
 
 detection "cross_site_scripting_attribute_injection" {
-  title           = "Attribute Injection XSS"
-  description     = "Detect XSS attacks that inject malicious attributes into HTML elements."
+  title           = "Cross-Site Scripting Attribute Injection"
+  description     = "Detect Cross-Site Scripting attacks using HTML attribute injection, such as event handlers or dangerous attributes in requests and User-Agent headers."
   documentation   = file("./detections/docs/cross_site_scripting_attribute_injection.md")
   severity        = "high"
   display_columns = local.detection_display_columns
@@ -85,7 +85,7 @@ detection "cross_site_scripting_attribute_injection" {
   query = query.cross_site_scripting_attribute_injection
 
   tags = merge(local.cross_site_scripting_common_tags, {
-    mitre_attack_ids = "TA0001:T1059.007",
+    mitre_attack_ids = "TA0002:T1059.007",
     owasp_top_10     = "A03:2021-Injection"
   })
 }
@@ -154,8 +154,8 @@ query "cross_site_scripting_attribute_injection" {
 }
 
 detection "cross_site_scripting_encoding" {
-  title           = "Encoding-based XSS"
-  description     = "Detect XSS attacks that use various encoding techniques to bypass security filters."
+  title           = "Cross-Site Scripting Encoding"
+  description     = "Detect Cross-Site Scripting attacks using various encoding techniques to bypass filters in requests and User-Agent headers."
   documentation   = file("./detections/docs/cross_site_scripting_encoding.md")
   severity        = "high"
   display_columns = local.detection_display_columns
@@ -163,7 +163,7 @@ detection "cross_site_scripting_encoding" {
   query = query.cross_site_scripting_encoding
 
   tags = merge(local.cross_site_scripting_common_tags, {
-    mitre_attack_ids = "TA0001:T1059.007",
+    mitre_attack_ids = "TA0002:T1059.007",
     owasp_top_10     = "A03:2021-Injection"
   })
 }
@@ -216,8 +216,8 @@ query "cross_site_scripting_encoding" {
 }
 
 detection "cross_site_scripting_html_injection" {
-  title           = "HTML Injection XSS"
-  description     = "Detect XSS attacks that inject malicious HTML content."
+  title           = "Cross-Site Scripting HTML Injection"
+  description     = "Detect Cross-Site Scripting attacks using HTML tag injection that may execute JavaScript in requests and User-Agent headers."
   documentation   = file("./detections/docs/cross_site_scripting_html_injection.md")
   severity        = "high"
   display_columns = local.detection_display_columns
@@ -225,7 +225,7 @@ detection "cross_site_scripting_html_injection" {
   query = query.cross_site_scripting_html_injection
 
   tags = merge(local.cross_site_scripting_common_tags, {
-    mitre_attack_ids = "TA0001:T1059.007",
+    mitre_attack_ids = "TA0002:T1059.007",
     owasp_top_10     = "A03:2021-Injection"
   })
 }
@@ -290,8 +290,8 @@ query "cross_site_scripting_html_injection" {
 }
 
 detection "cross_site_scripting_javascript_methods" {
-  title           = "JavaScript Methods XSS"
-  description     = "Detect XSS attacks that use JavaScript methods to execute malicious code."
+  title           = "Cross-Site Scripting JavaScript Methods"
+  description     = "Detect Cross-Site Scripting attacks using dangerous JavaScript methods like eval(), setTimeout(), and Function() in requests and User-Agent headers."
   documentation   = file("./detections/docs/cross_site_scripting_javascript_methods.md")
   severity        = "high"
   display_columns = local.detection_display_columns
@@ -299,7 +299,7 @@ detection "cross_site_scripting_javascript_methods" {
   query = query.cross_site_scripting_javascript_methods
 
   tags = merge(local.cross_site_scripting_common_tags, {
-    mitre_attack_ids = "TA0001:T1059.007",
+    mitre_attack_ids = "TA0002:T1059.007",
     owasp_top_10     = "A03:2021-Injection"
   })
 }
@@ -344,8 +344,8 @@ query "cross_site_scripting_javascript_methods" {
 }
 
 detection "cross_site_scripting_javascript_uri" {
-  title           = "JavaScript URI XSS"
-  description     = "Detect XSS attacks that use JavaScript URIs to execute malicious code."
+  title           = "Cross-Site Scripting JavaScript URI"
+  description     = "Detect Cross-Site Scripting attacks using javascript: URI schemes in attributes like href or src in requests and User-Agent headers."
   documentation   = file("./detections/docs/cross_site_scripting_javascript_uri.md")
   severity        = "high"
   display_columns = local.detection_display_columns
@@ -353,7 +353,7 @@ detection "cross_site_scripting_javascript_uri" {
   query = query.cross_site_scripting_javascript_uri
 
   tags = merge(local.cross_site_scripting_common_tags, {
-    mitre_attack_ids = "TA0001:T1059.007",
+    mitre_attack_ids = "TA0002:T1059.007",
     owasp_top_10     = "A03:2021-Injection"
   })
 }
@@ -394,8 +394,8 @@ query "cross_site_scripting_javascript_uri" {
 }
 
 detection "cross_site_scripting_script_tag" {
-  title           = "Script Tag XSS"
-  description     = "Detect XSS attacks that use script tags to execute malicious code."
+  title           = "Cross-Site Scripting Script Tag"
+  description     = "Detect Cross-Site Scripting attacks using script tags to execute arbitrary JavaScript code in requests and User-Agent headers."
   documentation   = file("./detections/docs/cross_site_scripting_script_tag.md")
   severity        = "high"
   display_columns = local.detection_display_columns
@@ -403,7 +403,7 @@ detection "cross_site_scripting_script_tag" {
   query = query.cross_site_scripting_script_tag
 
   tags = merge(local.cross_site_scripting_common_tags, {
-    mitre_attack_ids = "TA0001:T1059.007",
+    mitre_attack_ids = "TA0002:T1059.007",
     owasp_top_10     = "A03:2021-Injection"
   })
 }

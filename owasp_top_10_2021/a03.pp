@@ -20,13 +20,13 @@ benchmark "owasp_top_10_2021_a03" {
     detection.cross_site_scripting_javascript_uri,
     detection.cross_site_scripting_script_tag,
     detection.log4shell_vulnerability,
-    detection.spring4shell_vulnerability
+    detection.spring4shell_vulnerability,
     detection.sql_injection_blind_based,
     detection.sql_injection_common_patterns,
     detection.sql_injection_error_based,
     detection.sql_injection_time_based,
     detection.sql_injection_union_based,
-    detection.sql_injection_user_agent_based,
+    detection.sql_injection_user_agent_based
   ]
 
   tags = merge(local.owasp_top_10_2021_a03_common_tags, {

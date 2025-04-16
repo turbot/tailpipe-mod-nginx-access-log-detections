@@ -1,13 +1,12 @@
 locals {
   remote_command_execution_common_tags = merge(local.nginx_access_log_detections_common_tags, {
-    category    = "Security"
-    attack_type = "Remote Command Execution"
+    category = "Remote Command Execution"
   })
 }
 
 benchmark "remote_command_execution_detections" {
   title       = "Remote Command Execution (RCE) Detections"
-  description = "This benchmark contains RCE focused detections when scanning Nginx access logs."
+  description = "This benchmark contains RCE focused detections when scanning access logs."
   type        = "detection"
   children = [
     detection.log4shell_vulnerability,

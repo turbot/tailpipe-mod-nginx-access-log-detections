@@ -7,7 +7,7 @@ locals {
 
 benchmark "local_file_inclusion_detections" {
   title       = "Local File Inclusion (LFI) Detections"
-  description = "This benchmark contains LFI focused detections when scanning Nginx access logs."
+  description = "This benchmark contains LFI focused detections when scanning access logs."
   type        = "detection"
   children = [
     detection.encoded_path_traversal,
@@ -124,8 +124,8 @@ query "encoded_path_traversal" {
 }
 
 detection "header_based_local_file_inclusion" {
-  title           = "Header-based Local File Inclusion"
-  description     = "Detect attempts to include local files through HTTP header manipulation."
+  title           = "Header-Based Local File Inclusion"
+  description     = "Detect when a web server received requests with LFI attack patterns in the User-Agent or other headers, which may indicate attempts to bypass basic WAF protections."
   documentation   = file("./detections/docs/header_based_local_file_inclusion.md")
   severity        = "critical"
   display_columns = local.detection_display_columns
@@ -133,7 +133,7 @@ detection "header_based_local_file_inclusion" {
   query = query.header_based_local_file_inclusion
 
   tags = merge(local.local_file_inclusion_common_tags, {
-    mitre_attack_ids = "TA0007:T1083",
+    mitre_attack_ids = "TA0001:T1190",
     owasp_top_10     = "A01:2021-Broken Access Control"
   })
 }
@@ -175,7 +175,7 @@ query "header_based_local_file_inclusion" {
 
 detection "os_file_access" {
   title           = "OS File Access"
-  description     = "Detect attempts to access operating system files through web requests."
+  description     = "Detect attempts to access sensitive operating system files that might reveal confidential system information."
   documentation   = file("./detections/docs/os_file_access.md")
   severity        = "critical"
   display_columns = local.detection_display_columns
@@ -233,7 +233,7 @@ query "os_file_access" {
 
 detection "hidden_file_access" {
   title           = "Hidden File Access"
-  description     = "Detect attempts to access hidden files and directories through web requests."
+  description     = "Detect attempts to access hidden files and directories, which may contain sensitive configuration data or credentials."
   documentation   = file("./detections/docs/hidden_file_access.md")
   severity        = "critical"
   display_columns = local.detection_display_columns
@@ -283,7 +283,7 @@ query "hidden_file_access" {
 
 detection "restricted_file_access" {
   title           = "Restricted File Access"
-  description     = "Detect attempts to access restricted files and directories through web requests."
+  description     = "Detect attempts to access restricted application files, such as configuration files, that might reveal sensitive application data."
   documentation   = file("./detections/docs/restricted_file_access.md")
   severity        = "critical"
   display_columns = local.detection_display_columns

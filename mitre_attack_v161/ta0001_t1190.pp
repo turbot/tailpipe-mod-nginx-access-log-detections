@@ -9,10 +9,7 @@ benchmark "mitre_attack_v161_ta0001_t1190" {
   type          = "detection"
   documentation = file("./mitre_attack_v161/docs/ta0001_t1190.md")
   children = [
-    # Local File Inclusion exploits
     detection.header_based_local_file_inclusion,
-
-    # SQL Injection exploits
     detection.sql_injection_blind_based,
     detection.sql_injection_common_patterns,
     detection.sql_injection_error_based,

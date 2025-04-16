@@ -14,7 +14,7 @@ benchmark "owasp_top_10_2021_a01" {
     detection.hidden_file_access,
     detection.os_file_access,
     detection.path_traversal,
-    detection.restricted_file_access,
+    detection.restricted_file_access
   ]
 
   tags = merge(local.owasp_top_10_2021_a01_common_tags, {
