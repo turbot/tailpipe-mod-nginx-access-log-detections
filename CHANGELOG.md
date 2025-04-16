@@ -8,4 +8,4 @@
    - OWASP Top 10 2021 benchmark (`powerpipe benchmark run nginx_access_log_detections.benchmark.owasp_top_10_2021`).
  
  - New dashboards added:
-   - [Nginx Access Log Activity Dashboard](https://hub.powerpipe.io/mods/turbot/tailpipe_nginx_access_log_detections/dashboards/dashboard.activity_dashboard)
+   - [Nginx Access Log Activity Dashboard](https://hub.powerpipe.io/mods/turbot/tailpipe-mod-nginx-access-log-detections/dashboards/dashboard.activity_dashboard)
