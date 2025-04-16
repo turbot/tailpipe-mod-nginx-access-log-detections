@@ -56,13 +56,13 @@ dashboard "activity_dashboard" {
 
     chart {
       title = "Requests by Status Code"
-      query = query.activity_dashboard_status_distribution
+      query = query.activity_dashboard_requests_by_status_code
       width = 6
       type  = "pie"
     }
 
     chart {
-      title = "Requests by User Agent"
+      title = "Top 10 User Agents (Requests)"
       query = query.activity_dashboard_requests_by_user_agent
       width = 6
       type  = "pie"
@@ -180,7 +180,8 @@ query "activity_dashboard_top_10_clients" {
     group by
       remote_addr
     order by
-      count(*) desc
+      count(*) desc,
+      remote_addr
     limit 10;
   EOQ
 }
@@ -200,7 +201,8 @@ query "activity_dashboard_top_10_urls" {
     group by
       request_uri
     order by
-      count(*) desc
+      count(*) desc,
+      request_uri
     limit 10;
   EOQ
 }
@@ -222,9 +224,9 @@ query "activity_dashboard_requests_by_day" {
   EOQ
 }
 
-query "activity_dashboard_status_distribution" {
-  title       = "Status Code Distribution"
-  description = "Distribution of HTTP status codes by category."
+query "activity_dashboard_requests_by_status_code" {
+  title       = "Requests by Status Code"
+  description = "Count of rqeuests grouped by status code."
 
   sql = <<-EOQ
     select
@@ -241,13 +243,9 @@ query "activity_dashboard_status_distribution" {
     where
       status is not null
     group by
-      case
-        when status between 200 and 299 then '2xx Success'
-        when status between 300 and 399 then '3xx Redirect'
-        when status between 400 and 499 then '4xx Client Error'
-        when status between 500 and 599 then '5xx Server Error'
-        else 'Other'
-      end;
+      "Status Category"
+    order by
+      "Status Category";
   EOQ
 }
 
@@ -266,7 +264,8 @@ query "activity_dashboard_requests_by_http_method" {
     group by
       request_method
     order by
-      count(*) asc;
+      count(*) asc,
+      request_method;
   EOQ
 }
 
@@ -287,7 +286,8 @@ query "activity_dashboard_requests_by_successful_requests" {
     group by
       request_uri
     order by
-      count(*) desc
+      count(*) desc,
+      request_uri
     limit 10;
   EOQ
 }
@@ -309,13 +309,14 @@ query "activity_dashboard_requests_by_errors" {
     group by
       request_uri
     order by
-      count(*) desc
+      count(*) desc,
+      request_uri
     limit 10;
   EOQ
 }
 
 query "activity_dashboard_requests_by_user_agent" {
-  title       = "Requests by User Agent"
+  title       = "Top 10 User Agents (Requests)"
   description = "Distribution of user agents in requests."
 
   sql = <<-EOQ
@@ -327,6 +328,10 @@ query "activity_dashboard_requests_by_user_agent" {
     where
       http_user_agent is not null
     group by
-      http_user_agent;
+      http_user_agent
+    order by
+      count(*) desc,
+      http_user_agent
+    limit 10;
   EOQ
 }

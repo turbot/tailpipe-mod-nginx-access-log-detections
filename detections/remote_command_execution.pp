@@ -10,105 +10,13 @@ benchmark "remote_command_execution_detections" {
   description = "This benchmark contains RCE focused detections when scanning Nginx access logs."
   type        = "detection"
   children = [
-    detection.command_injection,
     detection.log4shell_vulnerability,
-    detection.shell_command_injection,
     detection.spring4shell_vulnerability,
-    detection.system_command_injection,
   ]
 
   tags = merge(local.remote_command_execution_common_tags, {
     type = "Benchmark"
   })
-}
-
-detection "command_injection" {
-  title           = "Command Injection"
-  description     = "Detect attempts to inject and execute system commands through web requests."
-  documentation   = file("./detections/docs/command_injection.md")
-  severity        = "critical"
-  display_columns = local.detection_display_columns
-
-  query = query.command_injection
-
-  tags = merge(local.remote_command_execution_common_tags, {
-    mitre_attack_ids = "TA0002:T1059",
-    owasp_top_10     = "A03:2021-Injection"
-  })
-}
-
-query "command_injection" {
-  sql = <<-EOQ
-    select
-      ${local.detection_sql_columns}
-    from
-      nginx_access_log
-    where
-      request_uri is not null
-      and (
-        -- Common command injection patterns
-        request_uri ilike '%|%'
-        or request_uri ilike '%`%'
-        or request_uri ilike '%$(%'
-        or request_uri ilike '%;%'
-        or request_uri ilike '%&&%'
-        or request_uri ilike '%||%'
-        -- Common command execution functions
-        or request_uri ilike '%exec(%'
-        or request_uri ilike '%system(%'
-        or request_uri ilike '%shell_exec(%'
-        or request_uri ilike '%passthru(%'
-        or request_uri ilike '%popen(%'
-      )
-    order by
-      tp_timestamp desc;
-  EOQ
-}
-
-detection "shell_command_injection" {
-  title           = "Shell Command Injection"
-  description     = "Detect attempts to inject and execute shell commands through web requests."
-  documentation   = file("./detections/docs/shell_command_injection.md")
-  severity        = "critical"
-  display_columns = local.detection_display_columns
-
-  query = query.shell_command_injection
-
-  tags = merge(local.remote_command_execution_common_tags, {
-    mitre_attack_ids = "TA0002:T1059",
-    owasp_top_10     = "A03:2021-Injection"
-  })
-}
-
-query "shell_command_injection" {
-  sql = <<-EOQ
-    select
-      ${local.detection_sql_columns}
-    from
-      nginx_access_log
-    where
-      request_uri is not null
-      and (
-        -- Shell command patterns
-        request_uri ilike '%sh%'
-        or request_uri ilike '%bash%'
-        or request_uri ilike '%cmd%'
-        or request_uri ilike '%powershell%'
-        or request_uri ilike '%nc%'
-        or request_uri ilike '%netcat%'
-        or request_uri ilike '%wget%'
-        or request_uri ilike '%curl%'
-        -- Common shell commands
-        or request_uri ilike '%cat%'
-        or request_uri ilike '%ls%'
-        or request_uri ilike '%dir%'
-        or request_uri ilike '%rm%'
-        or request_uri ilike '%del%'
-        or request_uri ilike '%echo%'
-      )
-    order by
-      tp_timestamp desc;
-  EOQ
 }
 
 detection "log4shell_vulnerability" {
@@ -208,46 +116,3 @@ query "spring4shell_vulnerability" {
       tp_timestamp desc;
   EOQ
 }
-
-detection "system_command_injection" {
-  title           = "System Command Injection"
-  description     = "Detect attempts to inject and execute system commands through web requests."
-  documentation   = file("./detections/docs/system_command_injection.md")
-  severity        = "critical"
-  display_columns = local.detection_display_columns
-
-  query = query.system_command_injection
-
-  tags = merge(local.remote_command_execution_common_tags, {
-    mitre_attack_ids = "TA0002:T1059",
-    owasp_top_10     = "A03:2021-Injection"
-  })
-}
-
-query "system_command_injection" {
-  sql = <<-EOQ
-    select
-      ${local.detection_sql_columns}
-    from
-      nginx_access_log
-    where
-      request_uri is not null
-      and (
-        -- Common command injection patterns
-        request_uri ilike '%|%'
-        or request_uri ilike '%`%'
-        or request_uri ilike '%$(%'
-        or request_uri ilike '%;%'
-        or request_uri ilike '%&&%'
-        or request_uri ilike '%||%'
-        -- Common command execution functions
-        or request_uri ilike '%exec(%'
-        or request_uri ilike '%system(%'
-        or request_uri ilike '%shell_exec(%'
-        or request_uri ilike '%passthru(%'
-        or request_uri ilike '%popen(%'
-      )
-    order by
-      tp_timestamp desc;
-  EOQ
-} 

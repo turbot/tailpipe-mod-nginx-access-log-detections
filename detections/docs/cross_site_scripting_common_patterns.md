@@ -1,10 +1,15 @@
 ## Overview
 
-Detect common cross-site scripting (XSS) patterns in Nginx access logs. This detection identifies basic XSS attack attempts using standard injection vectors and common payloads that might indicate an attempt to execute malicious scripts in users' browsers.
+Cross-Site Scripting Common Patterns detection identifies fundamental Cross-Site Scripting (XSS) patterns in HTTP requests and User-Agent headers. Cross-Site Scripting is one of the most prevalent web application security flaws that allows attackers to inject client-side scripts into web pages viewed by other users.
 
-The detection focuses on identifying common XSS patterns, including basic script tags, event handlers, and other HTML injection vectors that might be used to execute malicious code in users' browsers through Nginx web server requests.
+This detection focuses on identifying the most common and widespread XSS attack patterns, including script tags, JavaScript functions like `alert()`, `prompt()`, and `eval()`, as well as document object manipulation attempts. These attacks typically target vulnerable input fields in web applications that fail to properly sanitize or encode user input.
+
+When XSS attacks are successful, attackers can steal cookies, session tokens, or other sensitive information; redirect users to malicious websites; or perform actions on behalf of the victim. Common targets include search fields, comment sections, form inputs, and URL parameters that are reflected back to users without proper sanitization.
+
+The detection helps identify reconnaissance attempts and actual exploitation by monitoring for script tags and common JavaScript functions in both request URIs and User-Agent headers. This comprehensive approach catches attackers attempting to evade detection by placing malicious payloads in HTTP headers rather than request parameters. While many of these patterns may represent false positives in legitimate use cases, their presence in log records often indicates scanning or active exploitation attempts.
 
 **References**:
-- [OWASP Cross-Site Scripting (XSS)](https://owasp.org/www-community/attacks/xss/)
+- [OWASP: Cross Site Scripting Prevention](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html)
 - [CWE-79: Improper Neutralization of Input During Web Page Generation](https://cwe.mitre.org/data/definitions/79.html)
-- [MITRE ATT&CK: Exploit Public-Facing Application (T1190)](https://attack.mitre.org/techniques/T1190/) 
+- [OWASP Top 10 2021: A03 Injection](https://owasp.org/Top10/A03_2021-Injection/)
+- [MITRE ATT&CK: T1059.007 Command and Scripting Interpreter: JavaScript](https://attack.mitre.org/techniques/T1059/007/)

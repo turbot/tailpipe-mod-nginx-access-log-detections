@@ -1,8 +1,8 @@
 ## Overview
 
-Detect common SQL injection patterns targeting typical SQL keywords and syntax patterns in Nginx access logs. This detection identifies frequently used SQL injection techniques that might indicate an attempt to manipulate database queries, focusing on the most widespread syntax elements attackers use to compromise database security.
+Detect common SQL injection patterns targeting typical SQL keywords and syntax patterns. This detection identifies frequently used SQL injection techniques that might indicate an attempt to manipulate database queries, focusing on the most widespread syntax elements attackers use to compromise database security.
 
-This detection identifies common SQL command patterns (SELECT, INSERT, DELETE, UPDATE), basic SQL injection techniques (OR 1=1), and SQL comment markers used to bypass security controls in Nginx web server logs.
+This detection identifies common SQL command patterns (SELECT, INSERT, DELETE, UPDATE), basic SQL injection techniques (OR 1=1), and SQL comment markers used to bypass security controls.
 
 **References**:
 - [OWASP SQL Injection Guide](https://owasp.org/www-community/attacks/SQL_Injection)

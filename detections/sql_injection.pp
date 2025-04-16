@@ -60,7 +60,7 @@ query "sql_injection_common_patterns" {
         -- Common SQL injection patterns
         or request_uri ilike '%or%1=1%'
         or request_uri ilike '%or%true%'
-        or request_uri ilike '%/*%*/%'
+        or request_uri ilike '%/*_%*/%'
         or request_uri ilike '%--+%'
         or request_uri ilike '%-- %'
         or request_uri ilike '%;--%'
@@ -100,15 +100,6 @@ query "sql_injection_union_based" {
       and (
         -- UNION-based patterns
         request_uri ilike '%union%select%'
-        or request_uri ilike '%union%all%select%'
-        or request_uri ilike '%union+select%'
-        or request_uri ilike '%union+all+select%'
-        -- URL encoded variants
-        or request_uri ilike '%union%20select%'
-        or request_uri ilike '%union%20all%20select%'
-        or request_uri ilike '%union%09select%'
-        or request_uri ilike '%union%0Aselect%'
-        or request_uri ilike '%union%0Dselect%'
         -- Evasion techniques specific to UNION
         or request_uri ilike '%uni%on%sel%ect%'
         or request_uri ilike '%uni*/*/on/**/sel/**/ect%'
@@ -146,7 +137,6 @@ query "sql_injection_blind_based" {
         -- Blind condition checks
         request_uri ilike '%and%1=1%'
         or request_uri ilike '%and%1=2%'
-        or request_uri ilike '%and%if%'
         or request_uri ilike '%case%when%'
         or request_uri ilike '%substr%(%'
         or request_uri ilike '%substring%(%'
@@ -159,7 +149,6 @@ query "sql_injection_blind_based" {
         or request_uri ilike '%and+ascii(substring%'
         or request_uri ilike '%and+length(%)%'
         -- URL encoded variants common in blind injections
-        or request_uri ilike '%and%20%'
         or request_uri ilike '%and%28select%'
         or request_uri ilike '%and%28case%'
       )
@@ -208,7 +197,6 @@ query "sql_injection_error_based" {
         or request_uri ilike '%version%(%'
         or request_uri ilike '%pg_sleep%(%'
         or request_uri ilike '%sys.%'
-        or request_uri ilike '%sys.xp_%'
         -- Common error triggers
         or request_uri ilike '%having%1=1%'
         or request_uri ilike '%order%by%'
@@ -250,15 +238,6 @@ query "sql_injection_time_based" {
         or request_uri ilike '%dbms_pipe.receive_message%(%'
         or request_uri ilike '%waitfor%delay%'
         or request_uri ilike '%GENERATE_SERIES%'
-        -- Time-based with conditional logic
-        or request_uri ilike '%if%sleep%'
-        or request_uri ilike '%if%benchmark%'
-        or request_uri ilike '%case%when%sleep%'
-        or request_uri ilike '%and%sleep%'
-        -- URL encoded variants
-        or request_uri ilike '%and%20sleep%'
-        or request_uri ilike '%or%20sleep%'
-        or request_uri ilike '%waitfor%20delay%'
       )
     order by
       tp_timestamp desc;
@@ -300,7 +279,7 @@ query "sql_injection_user_agent_based" {
         or http_user_agent ilike '%--+%'
         or http_user_agent ilike '%-- %'
         or http_user_agent ilike '%;--%'
-        or http_user_agent ilike '%/*%*/%'
+        or http_user_agent ilike '%/*_%*/%'
         or http_user_agent ilike '%or%1=1%'
         or http_user_agent ilike '%or%true%'
         -- Database-specific User-Agent attacks
